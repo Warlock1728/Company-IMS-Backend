@@ -1,6 +1,7 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +46,11 @@ public class ResumeServiceImpl implements ResumeService {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@Override
+	public List<Resume> getResumesByJobPositionId(Long jobPositionId) {
+		return resumeRepository.findByJobPositionId(jobPositionId);
+
 	}
 }

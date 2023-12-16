@@ -24,7 +24,7 @@ public class Resume {
 	private String fileName;
 
 	@Lob
-	@Column(name = "file_data")
+	@Column(name = "file_data", columnDefinition = "LONGBLOB", length = Integer.MAX_VALUE)
 	private byte[] fileData;
 
 	@ManyToOne
