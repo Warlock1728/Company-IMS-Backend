@@ -48,12 +48,12 @@ public class TimeSheetController {
 	public ResponseEntity<String> getTotalHours(@RequestParam Long userId) {
 		Duration totalWorkDuration = timeSheetService.calculateTotalHours(userId);
 		long hours = totalWorkDuration.toHours();
-		long minutes = totalWorkDuration.toMinutes() % 60;
-		long seconds = totalWorkDuration.getSeconds() % 60;
+		long minutes = totalWorkDuration.toMinutesPart();
+		long seconds = totalWorkDuration.toSecondsPart();
 
 		return new ResponseEntity<>(
 				"Total Time worked: " + hours + " hours, " + minutes + " minutes, " + seconds + " seconds",
 				HttpStatus.OK);
-
 	}
+
 }
