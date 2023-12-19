@@ -15,11 +15,6 @@ public interface TimeSheetRepository extends JpaRepository<TimeSheet, Long> {
 
 	Optional<TimeSheet> findTopByUserIdOrderByIdDesc(Long userId);
 
-	@Query("SELECT COALESCE(SUM(TIME_TO_SEC(TIMEDIFF(ts.checkOutTime, ts.checkInTime))), 0) " + "FROM TimeSheet ts "
-			+ "WHERE ts.user.id = :userId")
-	BigDecimal calculateTotalWorkDuration(@Param("userId") Long userId);
-	
-
 	@Query("SELECT t FROM TimeSheet t " + "WHERE t.user.id = :userId " + "AND t.checkInTime >= :startOfDay "
 			+ "AND t.checkInTime < :endOfDay " + "ORDER BY t.id DESC")
 	List<TimeSheet> findTodayTimeSheetByUserId(@Param("userId") Long userId,

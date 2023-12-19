@@ -50,6 +50,7 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		timeSheet.setUser(user);
 		timeSheet.setCheckInTime(LocalDateTime.now());
 		timeSheet.setStatus(TimeSheetStatus.CHECKED_IN);
+		timeSheet.setDay(LocalDate.now().getDayOfWeek());
 		timeSheetRepository.save(timeSheet);
 	}
 
@@ -87,7 +88,7 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		TimeSheet timeSheet = todayTimeSheets.get(0);
 		Break breakEntry = new Break();
 		breakEntry.setBreakStartTime(LocalDateTime.now());
-		breakEntry.setTimeSheet(timeSheet); // Set the association
+		breakEntry.setTimeSheet(timeSheet); 
 		timeSheet.setStatus(TimeSheetStatus.BREAK);
 		timeSheet.getBreaks().add(breakEntry);
 		timeSheetRepository.save(timeSheet);
