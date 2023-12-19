@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,7 +89,7 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		TimeSheet timeSheet = todayTimeSheets.get(0);
 		Break breakEntry = new Break();
 		breakEntry.setBreakStartTime(LocalDateTime.now());
-		breakEntry.setTimeSheet(timeSheet); 
+		breakEntry.setTimeSheet(timeSheet);
 		timeSheet.setStatus(TimeSheetStatus.BREAK);
 		timeSheet.getBreaks().add(breakEntry);
 		timeSheetRepository.save(timeSheet);
@@ -137,6 +138,12 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		}
 
 		return totalWorkDuration;
+	}
+
+	@Scheduled(cron = "0 0 0 1 * ?") // 12 AM every first of month, we delete the timesheet for new month.
+	@Transactional
+	public void deleteMonthlyData() {
+		timeSheetRepository.deleteAll();
 	}
 
 }
