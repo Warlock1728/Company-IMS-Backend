@@ -1,6 +1,8 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,6 +100,26 @@ public class LeaveServiceImpl implements LeaveService {
 		}
 
 		return false;
+	}
+
+	@Override
+	public List<LeaveRequestDTO> getAllLeavesForUser(Long userId) {
+	    List<LeaveRequest> leaves = leaveRepository.findByUserId(userId);
+	    return leaves.stream().map(this::convertToDTO).collect(Collectors.toList());
+	}
+
+	private LeaveRequestDTO convertToDTO(LeaveRequest leave) {
+	    LeaveRequestDTO leaveDTO = new LeaveRequestDTO();
+	    leaveDTO.setLeaveType(leave.getLeaveType());
+	    leaveDTO.setStartDate(leave.getStartDate());
+	    leaveDTO.setEndDate(leave.getEndDate());
+	    leaveDTO.setUser(leave.getUser());
+	    leaveDTO.setDescription(leave.getDescription());
+	    leaveDTO.setStatus(leave.getStatus());
+	    
+	  
+
+	    return leaveDTO;
 	}
 
 }

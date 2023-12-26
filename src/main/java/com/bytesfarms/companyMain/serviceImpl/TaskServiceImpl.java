@@ -27,7 +27,7 @@ public class TaskServiceImpl implements TaskService {
 	private UserRepository userRepository;
 
 	@Override
-	public Task createTask(Long userId,TaskDTO taskDTO) {
+	public Task createTask(Long userId, TaskDTO taskDTO) {
 
 		Task task = new Task();
 
@@ -51,17 +51,29 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Task updateTask(Long userId,Long taskId, TaskDTO taskDTO) {
+	public Task updateTask(Long userId, Long taskId, TaskDTO taskDTO) {
 		Task existingTask = taskRepository.findById(taskId)
 				.orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
 
-		
-		existingTask.setTaskDescription(taskDTO.getTaskDescription());
-		existingTask.setExpectedTime(LocalTime.parse(taskDTO.getExpectedTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
-		existingTask.setActualTime(LocalTime.parse(taskDTO.getActualTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
-		existingTask.setStatus(taskDTO.getStatus());
-		
-		return taskRepository.save(existingTask); //Update a task for employee if he needs any changes
+		if (taskDTO.getTaskDescription() != null) {
+			existingTask.setTaskDescription(taskDTO.getTaskDescription());
+		}
+
+		if (taskDTO.getExpectedTime() != null) {
+			existingTask.setExpectedTime(
+					LocalTime.parse(taskDTO.getExpectedTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
+		}
+
+		if (taskDTO.getActualTime() != null) {
+			existingTask
+					.setActualTime(LocalTime.parse(taskDTO.getActualTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
+		}
+
+		if (taskDTO.getStatus() != null) {
+			existingTask.setStatus(taskDTO.getStatus());
+		}
+
+		return taskRepository.save(existingTask); // Update a task for employee if he needs any changes
 	}
 
 }

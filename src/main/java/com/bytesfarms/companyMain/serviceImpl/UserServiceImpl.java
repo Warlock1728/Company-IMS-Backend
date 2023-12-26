@@ -28,6 +28,15 @@ public class UserServiceImpl implements UserService {
 				|| user.getRole() == null || user.getRole().getRoleName() == null) {
 			throw new IllegalArgumentException("All fields are required for user registration");
 		}
+		
+		if (userRepository.existsByEmail(user.getEmail())) {
+	        throw new IllegalArgumentException("Email is already in use: " + user.getEmail());
+	    }
+
+	    
+	    if (userRepository.existsByUsername(user.getUsername())) {
+	        throw new IllegalArgumentException("Username is already in use: " + user.getUsername());
+	    }
 
 		Role existingRole = roleRepository.findByRoleName(user.getRole().getRoleName())
 				.orElseThrow(() -> new IllegalArgumentException("Role not found: " + user.getRole().getRoleName()));
