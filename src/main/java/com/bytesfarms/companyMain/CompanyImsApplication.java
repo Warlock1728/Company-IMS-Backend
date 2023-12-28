@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @EntityScan(basePackages = "com.bytesfarms.companyMain.entity")
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.bytesfarms")
 
 public class CompanyImsApplication {
 

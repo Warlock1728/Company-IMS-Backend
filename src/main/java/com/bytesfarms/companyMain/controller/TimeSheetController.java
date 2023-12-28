@@ -1,6 +1,6 @@
 package com.bytesfarms.companyMain.controller;
 
-import java.time.Duration;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bytesfarms.companyMain.entity.TimeSheet;
 import com.bytesfarms.companyMain.service.TimeSheetService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * @author Shivendra Singh
@@ -20,6 +23,9 @@ import com.bytesfarms.companyMain.service.TimeSheetService;
 @RestController
 @RequestMapping("/timesheet")
 public class TimeSheetController {
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	@Autowired
 	private TimeSheetService timeSheetService;
@@ -49,15 +55,9 @@ public class TimeSheetController {
 	}
 
 	@GetMapping("/totalhours")
-	public ResponseEntity<String> getTotalHours(@RequestParam Long userId) {
-		Duration totalWorkDuration = timeSheetService.calculateTotalHours(userId);
-		long hours = totalWorkDuration.toHours();
-		long minutes = totalWorkDuration.toMinutesPart();
-		long seconds = totalWorkDuration.toSecondsPart();
-
-		return new ResponseEntity<>(
-				"Total Time worked: " + hours + " hours, " + minutes + " minutes, " + seconds + " seconds",
-				HttpStatus.OK);
+	public ResponseEntity<List<TimeSheet>> getTotalHoursData(@RequestParam Long userId) {
+		List<TimeSheet> timeSheets = timeSheetService.calculateTotalHours(userId);
+		return ResponseEntity.ok(timeSheets);
 	}
 
 }

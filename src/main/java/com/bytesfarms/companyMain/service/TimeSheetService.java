@@ -1,6 +1,9 @@
 package com.bytesfarms.companyMain.service;
 
 import java.time.Duration;
+import java.util.List;
+
+import com.bytesfarms.companyMain.entity.TimeSheet;
 
 public interface TimeSheetService {
 
@@ -12,6 +15,6 @@ public interface TimeSheetService {
 
 	void endBreak(Long userId);
 
-	Duration calculateTotalHours(Long userId);
+	List<TimeSheet> calculateTotalHours(Long userId);
 
 }

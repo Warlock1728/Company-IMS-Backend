@@ -1,6 +1,7 @@
 package com.bytesfarms.companyMain.repository;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,5 +20,7 @@ public interface TimeSheetRepository extends JpaRepository<TimeSheet, Long> {
 			+ "AND t.checkInTime < :endOfDay " + "ORDER BY t.id DESC")
 	List<TimeSheet> findTodayTimeSheetByUserId(@Param("userId") Long userId,
 			@Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
+
+	List<TimeSheet> findByUserId(Long userId);
 
 }

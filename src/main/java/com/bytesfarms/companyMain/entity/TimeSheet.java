@@ -1,16 +1,14 @@
 package com.bytesfarms.companyMain.entity;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.bytesfarms.companyMain.util.TimeSheetStatus;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,24 +21,32 @@ import lombok.Data;
 @Data
 public class TimeSheet {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-    
-    @Enumerated(EnumType.STRING)
-    private DayOfWeek day;
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    private LocalDateTime checkInTime;
+	private String day;
 
-    private LocalDateTime checkOutTime;
+	private LocalDateTime checkInTime;
 
-    @OneToMany(mappedBy = "timeSheet", cascade = CascadeType.ALL)
-    private List<Break> breaks = new ArrayList<>();
+	private LocalDateTime checkOutTime;
 
-    private TimeSheetStatus status;
+	@OneToMany(mappedBy = "timeSheet", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<Break> breaks = new ArrayList<>();
+
+	private TimeSheetStatus status;
+
+	private long ActualHours;
+	private long ActualMinutes;
+	private long ActualSeconds;
+
+	private String month;
+
+	private String year;
+
 }
-

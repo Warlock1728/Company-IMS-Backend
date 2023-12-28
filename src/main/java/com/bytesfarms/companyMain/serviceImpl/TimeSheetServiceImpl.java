@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +18,7 @@ import com.bytesfarms.companyMain.repository.TimeSheetRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.TimeSheetService;
 import com.bytesfarms.companyMain.util.TimeSheetStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -27,6 +27,7 @@ import jakarta.persistence.EntityNotFoundException;
  */
 
 @Service
+
 public class TimeSheetServiceImpl implements TimeSheetService {
 
 	@Autowired
@@ -51,7 +52,9 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		timeSheet.setUser(user);
 		timeSheet.setCheckInTime(LocalDateTime.now());
 		timeSheet.setStatus(TimeSheetStatus.CHECKED_IN);
-		timeSheet.setDay(LocalDate.now().getDayOfWeek());
+		timeSheet.setDay(LocalDate.now().getDayOfWeek().toString());
+		timeSheet.setMonth(LocalDate.now().getMonth().toString());
+		timeSheet.setYear(Integer.toString(LocalDate.now().getYear()));
 		timeSheetRepository.save(timeSheet);
 	}
 
@@ -70,6 +73,22 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		TimeSheet timeSheet = lastEntry.get();
 		timeSheet.setCheckOutTime(LocalDateTime.now());
 		timeSheet.setStatus(TimeSheetStatus.CHECKED_OUT);
+
+		Duration totalWorkDuration = Duration.between(timeSheet.getCheckInTime(), timeSheet.getCheckOutTime());
+
+		for (Break breakEntry : timeSheet.getBreaks()) {
+			totalWorkDuration = totalWorkDuration
+					.minus(Duration.between(breakEntry.getBreakStartTime(), breakEntry.getBreakEndTime()));
+		}
+
+		long hours = totalWorkDuration.toHours();
+		long minutes = totalWorkDuration.toMinutesPart();
+		long seconds = totalWorkDuration.toSecondsPart();
+
+		timeSheet.setActualHours(hours);
+		timeSheet.setActualMinutes(minutes);
+		timeSheet.setActualSeconds(seconds);
+
 		timeSheetRepository.save(timeSheet);
 	}
 
@@ -116,34 +135,11 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 	}
 
 	@Override
-	public Duration calculateTotalHours(Long userId) {
+	public List<TimeSheet> calculateTotalHours(Long userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found"));
 
-		LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-		LocalDateTime endOfDay = startOfDay.plusHours(23).plusMinutes(59).plusSeconds(59);
-
-		List<TimeSheet> todayTimeSheets = timeSheetRepository.findTodayTimeSheetByUserId(userId, startOfDay, endOfDay);
-
-		Duration totalWorkDuration = Duration.ZERO;
-
-		for (TimeSheet timeSheet : todayTimeSheets) {
-			totalWorkDuration = totalWorkDuration
-					.plus(Duration.between(timeSheet.getCheckInTime(), timeSheet.getCheckOutTime()));
-
-			for (Break breakEntry : timeSheet.getBreaks()) {
-				totalWorkDuration = totalWorkDuration
-						.minus(Duration.between(breakEntry.getBreakStartTime(), breakEntry.getBreakEndTime()));
-			}
-		}
-
-		return totalWorkDuration;
-	}
-
-	@Scheduled(cron = "0 0 0 1 * ?") // 12 AM every first of month, we delete the timesheet for new month.
-	@Transactional
-	public void deleteMonthlyData() {
-		timeSheetRepository.deleteAll();
+		return timeSheetRepository.findByUserId(userId);
 	}
 
 }
