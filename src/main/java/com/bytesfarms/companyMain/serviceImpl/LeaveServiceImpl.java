@@ -1,10 +1,13 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.bytesfarms.companyMain.dto.LeaveRequestDTO;
@@ -25,6 +28,9 @@ public class LeaveServiceImpl implements LeaveService {
 	@Autowired
 	UserRepository userRepository;
 
+	@Autowired
+	JavaMailSender javaMailSender;
+
 	@Override
 	public boolean applyLeave(LeaveRequestDTO leaveRequestDTO, Long userId) {
 
@@ -42,6 +48,8 @@ public class LeaveServiceImpl implements LeaveService {
 			leaveRequest.setDescription(leaveRequestDTO.getDescription());
 			leaveRequest.setStatus("Pending");
 			leaveRepository.save(leaveRequest);
+
+			sendLeaveApplicationEmail(user);
 
 			return true;
 		} catch (Exception ex) {
@@ -104,24 +112,39 @@ public class LeaveServiceImpl implements LeaveService {
 
 	@Override
 	public List<LeaveRequestDTO> getAllLeavesForUser(Long userId) {
-	    List<LeaveRequest> leaves = leaveRepository.findByUserId(userId);
-	    return leaves.stream().map(this::convertToDTO).collect(Collectors.toList());
+		List<LeaveRequest> leaves = leaveRepository.findByUserId(userId);
+		return leaves.stream().map(this::convertToDTO).collect(Collectors.toList());
 	}
 
 	private LeaveRequestDTO convertToDTO(LeaveRequest leave) {
-	    LeaveRequestDTO leaveDTO = new LeaveRequestDTO();
-	    leaveDTO.setLeaveType(leave.getLeaveType());
-	    leaveDTO.setStartDate(leave.getStartDate());
-	    leaveDTO.setEndDate(leave.getEndDate());
-	    leaveDTO.setUser(leave.getUser());
-	    leaveDTO.setDescription(leave.getDescription());
-	    leaveDTO.setStatus(leave.getStatus());
-	    leaveDTO.setId(leave.getId());
-	    
-	    
-	  
+		LeaveRequestDTO leaveDTO = new LeaveRequestDTO();
+		leaveDTO.setLeaveType(leave.getLeaveType());
+		leaveDTO.setStartDate(leave.getStartDate());
+		leaveDTO.setEndDate(leave.getEndDate());
+		leaveDTO.setUser(leave.getUser());
+		leaveDTO.setDescription(leave.getDescription());
+		leaveDTO.setStatus(leave.getStatus());
+		leaveDTO.setId(leave.getId());
 
-	    return leaveDTO;
+		return leaveDTO;
+	}
+
+	private void sendLeaveApplicationEmail(User user) {
+
+		List<String> hrAdminEmails = userRepository.findByRoleIdIn(Arrays.asList(1L, 2L)).stream().map(User::getEmail)
+				.collect(Collectors.toList());
+
+		if (!hrAdminEmails.isEmpty()) {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setTo(hrAdminEmails.toArray(new String[0]));
+			message.setSubject("Leave Application Notification");
+			message.setText("A leave has been applied by user: " + user.getUsername() + ". Please check.");
+
+			javaMailSender.send(message);
+		} else {
+
+			System.out.println("No HR or Admin email addresses found.");
+		}
 	}
 
 }
