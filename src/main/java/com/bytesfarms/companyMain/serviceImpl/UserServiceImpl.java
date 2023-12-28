@@ -10,9 +10,13 @@ import org.springframework.stereotype.Service;
 
 import com.bytesfarms.companyMain.entity.Role;
 import com.bytesfarms.companyMain.entity.User;
+import com.bytesfarms.companyMain.entity.UserProfile;
 import com.bytesfarms.companyMain.repository.RoleRepository;
+import com.bytesfarms.companyMain.repository.UserProfileRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.UserService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -22,6 +26,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private RoleRepository roleRepository;
+
+	@Autowired
+	private UserProfileRepository userProfileRepository;
 
 	@Override
 	public User signUp(User user) {
@@ -98,6 +105,27 @@ public class UserServiceImpl implements UserService {
 				existingUser.setRole(user.getRole());
 			}
 
+			if (user.getProfile() != null) {
+				UserProfile updatedProfile = user.getProfile();
+
+				if (updatedProfile.getId() != null) {
+
+					UserProfile existingProfile = userProfileRepository.findById(updatedProfile.getId())
+							.orElseThrow(() -> new EntityNotFoundException(
+									"UserProfile not found with id: " + updatedProfile.getId()));
+
+					updateProfile(existingProfile, updatedProfile);
+					existingUser.setProfile(existingProfile);
+				} else {
+
+					UserProfile newProfile = new UserProfile();
+					updateProfile(newProfile, updatedProfile);
+					userProfileRepository.save(newProfile);
+					existingUser.setProfile(newProfile);
+				}
+
+			}
+
 			return userRepository.save(existingUser);
 		} else {
 			return null;
@@ -107,5 +135,43 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<User> getEmployees() {
 		return userRepository.findByRole_Id(3); // Method to get all employees for IMS Dashboard
+	}
+
+	private void updateProfile(UserProfile existingProfile, UserProfile updatedProfile) {
+
+		if (updatedProfile.getAddress() != null) {
+			existingProfile.setAddress(updatedProfile.getAddress());
+		}
+		if (updatedProfile.getDob() != null) {
+			existingProfile.setDob(updatedProfile.getDob());
+		}
+		if (updatedProfile.getAge() != null) {
+			existingProfile.setAge(updatedProfile.getAge());
+		}
+		if (updatedProfile.getMobile() != null) {
+			existingProfile.setMobile(updatedProfile.getMobile());
+		}
+		if (updatedProfile.getGender() != null) {
+			existingProfile.setGender(updatedProfile.getGender());
+		}
+		if (updatedProfile.getMaritalStatus() != null) {
+			existingProfile.setMaritalStatus(updatedProfile.getMaritalStatus());
+		}
+		if (updatedProfile.getDesignation() != null) {
+			existingProfile.setDesignation(updatedProfile.getDesignation());
+		}
+		if (updatedProfile.getPhone() != null) {
+			existingProfile.setPhone(updatedProfile.getPhone());
+		}
+		if (updatedProfile.getLocation() != null) {
+			existingProfile.setLocation(updatedProfile.getLocation());
+		}
+		if (updatedProfile.getExperience() != null) {
+			existingProfile.setExperience(updatedProfile.getExperience());
+		}
+		if (updatedProfile.getJoiningDate() != null) {
+			existingProfile.setJoiningDate(updatedProfile.getJoiningDate());
+		}
+
 	}
 }

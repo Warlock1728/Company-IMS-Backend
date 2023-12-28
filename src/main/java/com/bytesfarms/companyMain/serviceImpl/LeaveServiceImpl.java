@@ -116,6 +116,8 @@ public class LeaveServiceImpl implements LeaveService {
 	    leaveDTO.setUser(leave.getUser());
 	    leaveDTO.setDescription(leave.getDescription());
 	    leaveDTO.setStatus(leave.getStatus());
+	    leaveDTO.setId(leave.getId());
+	    
 	    
 	  
 

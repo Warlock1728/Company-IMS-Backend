@@ -15,7 +15,7 @@ public class JacksonConfig {
 	public Jackson2ObjectMapperBuilderCustomizer customizeJackson() {
 		return builder -> {
 			builder.modules(new JavaTimeModule());
-			System.out.println("Customizing Jackson: " + builder);
+			
 		};
 	}
 

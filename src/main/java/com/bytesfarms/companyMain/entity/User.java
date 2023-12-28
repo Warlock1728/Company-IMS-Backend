@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -22,4 +23,8 @@ public class User {
 	@ManyToOne
 	@JoinColumn(name = "role_id")
 	private Role role;
+
+	@OneToOne(optional = true) 
+	@JoinColumn(name = "profile_id")
+	private UserProfile profile;
 }
