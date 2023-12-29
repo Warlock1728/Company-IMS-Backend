@@ -84,6 +84,13 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+    
+    @PostMapping("/verifyOTP")
+	public ResponseEntity<Boolean> verifyOTP(@RequestBody User user,@RequestParam String otp) {
+		boolean createdUser = userService.verifyOtp(user,otp);
+		return ResponseEntity.ok(createdUser);
+	}
+    
 
     @GetMapping("/getEmployees")
     public ResponseEntity<List<User>> getEmployees() {

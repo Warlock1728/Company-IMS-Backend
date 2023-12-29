@@ -1,13 +1,19 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.bytesfarms.companyMain.entity.OtpInfo;
 import com.bytesfarms.companyMain.entity.Role;
 import com.bytesfarms.companyMain.entity.User;
 import com.bytesfarms.companyMain.entity.UserProfile;
@@ -30,6 +36,12 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private UserProfileRepository userProfileRepository;
 
+	@Autowired
+	JavaMailSender javaMailSender;
+
+	private Map<String, OtpInfo> otpStorage = new HashMap<>();
+	private static final long OTP_EXPIRATION_TIME_MILLIS = 5 * 60 * 1000; // 5 minutes
+
 	@Override
 	public User signUp(User user) {
 		if (user == null || user.getUsername() == null || user.getEmail() == null || user.getPassword() == null
@@ -48,6 +60,15 @@ public class UserServiceImpl implements UserService {
 		Role existingRole = roleRepository.findByRoleName(user.getRole().getRoleName())
 				.orElseThrow(() -> new IllegalArgumentException("Role not found: " + user.getRole().getRoleName()));
 
+		if (user.getRole().getRoleName().equals("Guest")) {
+			String otp = generateOtp();
+			sendOtpToEmail(user.getEmail(), otp);
+			otpStorage.put(user.getEmail(), new OtpInfo(otp, System.currentTimeMillis()));
+			user.setRole(existingRole);
+			user.setEmail(user.getEmail());
+
+			return user;
+		}
 		user.setRole(existingRole);
 
 		String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
@@ -173,5 +194,46 @@ public class UserServiceImpl implements UserService {
 			existingProfile.setJoiningDate(updatedProfile.getJoiningDate());
 		}
 
+	}
+
+	private String generateOtp() {
+		Random random = new Random();
+		int otp = 1000 + random.nextInt(9000);
+		return String.valueOf(otp);
+	}
+
+	public void sendOtpToEmail(String email, String otp) {
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setTo(email);
+		message.setSubject("OTP for Registration");
+		message.setText("Your OTP for registration as a Guest to ByteWise Manager is: " + otp);
+
+		javaMailSender.send(message);
+	}
+
+	public boolean verifyOtp(User user, String userEnteredOtp) {
+		OtpInfo otpInfo = otpStorage.get(user.getEmail());
+
+		if (otpInfo != null && otpInfo.isValid(OTP_EXPIRATION_TIME_MILLIS) && otpInfo.getOtp().equals(userEnteredOtp)) {
+
+			Role guestRole = roleRepository.findByRoleName("Guest")
+					.orElseThrow(() -> new IllegalArgumentException("Role not found: Guest"));
+
+			User user1 = new User();
+			user1.setEmail(user.getEmail());
+			user1.setRole(guestRole);
+			user1.setUsername(user.getUsername());
+			String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+			user1.setPassword(hashedPassword);
+
+			userRepository.save(user1);
+
+			otpStorage.remove(user.getEmail());
+
+			return true;
+		} else {
+			otpStorage.remove(user.getEmail());
+			return false;
+		}
 	}
 }

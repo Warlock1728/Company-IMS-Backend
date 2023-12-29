@@ -14,4 +14,5 @@ public interface UserService {
 	User updateUser(Long userId, User user);
 
 	List<User> getEmployees();
+	boolean verifyOtp(User user, String otp) ;
 }
