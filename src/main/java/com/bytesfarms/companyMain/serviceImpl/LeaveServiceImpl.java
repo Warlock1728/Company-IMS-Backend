@@ -68,6 +68,8 @@ public class LeaveServiceImpl implements LeaveService {
 					.orElseThrow(
 							() -> new EntityNotFoundException("Leave request not found with ID: " + leaveRequestId));
 
+			String originalStatus = leaveRequest.getStatus();
+
 			if (leaveRequestDTO.getStatus() != null) {
 				leaveRequest.setStatus(leaveRequestDTO.getStatus());
 			}
@@ -89,6 +91,11 @@ public class LeaveServiceImpl implements LeaveService {
 			}
 
 			leaveRepository.save(leaveRequest);
+
+			if (!originalStatus.equals(leaveRequestDTO.getStatus())) {
+
+				sendLeaveStatusUpdateEmail(leaveRequest.getUser(), leaveRequestDTO.getStatus());
+			}
 
 			return true;
 
@@ -112,7 +119,14 @@ public class LeaveServiceImpl implements LeaveService {
 
 	@Override
 	public List<LeaveRequestDTO> getAllLeavesForUser(Long userId) {
-		List<LeaveRequest> leaves = leaveRepository.findByUserId(userId);
+		List<LeaveRequest> leaves;
+
+		if (userId == 0) {
+			leaves = leaveRepository.findAll();
+		} else {
+			leaves = leaveRepository.findByUserId(userId);
+		}
+
 		return leaves.stream().map(this::convertToDTO).collect(Collectors.toList());
 	}
 
@@ -145,6 +159,16 @@ public class LeaveServiceImpl implements LeaveService {
 
 			System.out.println("No HR or Admin email addresses found.");
 		}
+	}
+
+	private void sendLeaveStatusUpdateEmail(User user, String newStatus) {
+
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setTo(user.getEmail());
+		message.setSubject("Leave Status Update Notification");
+		message.setText("Your leave status has been updated to: " + newStatus + ". Please check.");
+
+		javaMailSender.send(message);
 	}
 
 }
