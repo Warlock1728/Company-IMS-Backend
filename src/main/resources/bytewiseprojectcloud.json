@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "warlock1111",
+  "private_key_id": "55384587fc68a30fd295a97d36a96ab02e826857",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC9b5W7aYim53Ry\ni3dtVkOJ76YccFGPZ4nUcJVbV9yxTHHXbTbrDWaHn8Xs++04j3mmcytMRUiyrxcl\nsJ+WmTrnvMlbVJtvFeuAQFbTNp5ECJ1QcK1+pz0GzZBUdEmy2m/8m2Xw87U7PBcv\nUQNXpxQyc3GCHfgqBsDB1y5TV78DhBsnVrrQL8bbHLUZ1TMtgQkANSF3sceXf4cD\nLV0zssxdvONPVCre2hLju9YcwrjMMrtr9J3Tg+WPLNCGZiwjGZln8ldkTLTawiPJ\nnOmo6NzxuG7VxF7HpYTkSwKpN0o7Z6aMVfqz/1CJN57rNN5NMBPVosPpeGhgGZHR\n+khGOqOZAgMBAAECggEAF5OWKpOJXuBqlUD3VaPJVxb88QgnlnX36Pk0FYC7ZlOR\nzZJ5pcpuqs1/SC3YidQNe2JVDrKGyDpTYqz3R7p9Ys8Trmq6x5oOS9F2HOZszyHV\nVmgXp64vwbN+1Yv9iiV2j5VVnCXwtdUWO5zVEikosdi9VUjelHhvsBBUYyoGC21E\nLNLxBc2cpjTPRMlbWYByVsFaFNzi+lDJpXPTHzgT6JbGmfpLnAsUAGvUESJs2oMM\nOdFgvCARlfOk9cKswoK8fxIVY3esfG5PgEVGu6YA6HyiwPTFzezGVORov5i+Gvw+\nycjCMuSyfIOH9E+JDjTUNtlNKsDRvq9F6LZT6IAKywKBgQDtibkv+8ecpBmOvpk9\nMsHRjG/txQx8BrH3F2s7qR7P/MGIbf3IhgyObQXtDZWbeO1jJ5j5EWu+JmPcj78F\nhC8ITOS6HTpJBUsjdHtONW8juX61Z2at+iDIZaoQiFBQhEZJ/QFB/47kI48MvzVo\ng9EQPrdtBJaVd/yBsWtyGgpjBwKBgQDMKMb+CkLVLiGgXdHTJTv7Iz5XZIbjG00V\nsj6O+6PQ6296LghLBDYsNM4oDVsogCvyMDBwZ/3EctZDb5Q5dlWTw4vlswGpnSor\npId4bTjk2LNmfZ5mgYPJY5kIOV4wWesmOtKYe3oQDYaozl+tmVqrZ6rLKW36Z+av\nDPs5c7P8XwKBgCNf/1RGCtQpHCVF/Uw/4t1yLLkcP1+5H4fM1QtthEk1Ox02RDU4\nwWX0lo1XGJCu0auSmhV9oq4OyZBvV+NabCawTN/qumNlhmshTbu3+XU4isY5P/Fo\n7rjpawpLQqq7CDy8kRNjG8SeBw++6hVGjDv/GxIBPOvFkrU91uKHPkTBAoGBAI8r\nnXjzqzCifDRg9s9SkkCo04Qn3CwRrjoj2JkewR+2q2OMOoaY+oB/u3789sttLuRV\nhPKfCqgkPDvoWJL/eD36aPX5VZYjwDoA1HvQZJCfoxehyl5qPwgQz3Wj/Xh85lnV\n8G+8T7pIMgHZT+GG5L3FIlH8yMJM8MobmWYNzM+TAoGBAIROudiWIkWkGv7gR5KJ\nOsnoKq0Rc+mYKtRFKqqUi5fWlNjn1eo8dtFN4is5Sh2EJah8Zeenp/HofV9VA/Mt\nfz2eHYuiyQcDrTRZivdpQEsGIeN42GhnBRWNJWlvmlqWx69wetgORCg/4buPBwwQ\niN2uF4BIuDPlsV6xxO0RTbRg\n-----END PRIVATE KEY-----\n",
+  "client_email": "shivendra-s-project@warlock1111.iam.gserviceaccount.com",
+  "client_id": "109497392964569989173",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/shivendra-s-project%40warlock1111.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -1,7 +1,11 @@
 package com.bytesfarms.companyMain.entity;
 
+import com.bytesfarms.companyMain.util.ApplicationStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,5 +34,14 @@ public class Resume {
 	@ManyToOne
 	@JoinColumn(name = "job_position_id", nullable = false)
 	private JobPosition jobPosition;
+	
+
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable=false)
+	private User user;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private ApplicationStatus status;
 
 }

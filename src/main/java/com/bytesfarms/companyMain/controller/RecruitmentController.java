@@ -67,11 +67,7 @@ public class RecruitmentController {
 	
 	
 
-	@GetMapping("/positions/review-applications")
-	public ResponseEntity<JobPositionDTO> reviewApplications(@RequestParam Long id) {
-		JobPositionDTO reviewedJobPosition = jobPositionService.reviewApplications(id);
-		return new ResponseEntity<>(reviewedJobPosition, HttpStatus.OK);
-	}
+	
 
 	@PutMapping("/positions/shortlist/applicant")
 	public ResponseEntity<JobPositionDTO> shortlistCandidates(@RequestParam Long id,
