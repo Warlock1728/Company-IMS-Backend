@@ -1,5 +1,7 @@
 package com.bytesfarms.companyMain.entity;
 
+import java.math.BigDecimal;
+
 import com.bytesfarms.companyMain.util.ApplicationStatus;
 
 import jakarta.persistence.Column;
@@ -24,9 +26,6 @@ public class Resume {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "file_name")
-	private String fileName;
-
 	@Lob
 	@Column(name = "file_data", columnDefinition = "LONGBLOB", length = Integer.MAX_VALUE)
 	private byte[] fileData;
@@ -34,14 +33,18 @@ public class Resume {
 	@ManyToOne
 	@JoinColumn(name = "job_position_id", nullable = false)
 	private JobPosition jobPosition;
-	
 
 	@ManyToOne
-	@JoinColumn(name = "user_id", nullable=false)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
-	
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
 	private ApplicationStatus status;
+
+	private String lastJobTitle;
+	private Integer lastJobExperience;
+	private String lastJobCompany;
+	private BigDecimal expectedSalary;
 
 }

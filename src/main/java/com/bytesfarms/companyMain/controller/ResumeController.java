@@ -1,5 +1,6 @@
 package com.bytesfarms.companyMain.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,37 +29,42 @@ public class ResumeController {
 
 	@Autowired
 	private ResumeService resumeService;
-	
-	//Apply to a job position
-	
+
+	// Apply to a job position
+
 	@PostMapping("/upload")
-	public ResponseEntity<String> uploadResume(@RequestParam("fileName") String fileName,
-			@RequestPart("file") MultipartFile file, @RequestParam("jobPositionId") Long jobPositionId, @RequestParam("userId") Long userId) {
-		Long resumeId = resumeService.saveResume(fileName, file, jobPositionId, userId);
+	public ResponseEntity<String> uploadResume(@RequestPart("file") MultipartFile file,
+			@RequestParam("jobPositionId") Long jobPositionId, @RequestParam("userId") Long userId,
+			@RequestParam("lastJobTitle") String lastJobTitle,
+			@RequestParam("lastJobExperience") Integer lastJobExperience,
+			@RequestParam("lastJobCompany") String lastJobCompany,
+			@RequestParam("expectedSalary") BigDecimal expectedSalary) {
+		Long resumeId = resumeService.saveResume(file, jobPositionId, userId, lastJobTitle, lastJobExperience,
+				lastJobCompany, expectedSalary);
 		if (resumeId != null) {
 			return new ResponseEntity<>("Resume uploaded successfully. Resume ID: " + resumeId, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>("Failed to upload resume.", HttpStatus.OK);
 		}
 	}
-	
-	
-	//Get all the open job applications
-	
-	 @GetMapping("/get")
-	    public ResponseEntity<List<Resume>> getResumesByJobPositionId(@RequestParam Long jobPositionId) {
-	        List<Resume> resumes = resumeService.getResumesByJobPositionId(jobPositionId);
-	        return new ResponseEntity<>(resumes, HttpStatus.OK);
-	    }
-	 
-	 @PutMapping("/update-status")
-		public ResponseEntity<String> updateResumeStatus(@RequestParam Long resumeId, @RequestBody String status, @RequestParam Long jobPositionId) {
-			boolean isUpdated = resumeService.updateResumeStatus(resumeId, status,jobPositionId);
 
-			if (isUpdated) {
-				return new ResponseEntity<>("Resume status updated successfully.", HttpStatus.OK);
-			} else {
-				return new ResponseEntity<>("Failed to update resume status.", HttpStatus.OK);
-			}
+	// Get all the open job applications
+
+	@GetMapping("/get")
+	public ResponseEntity<List<Resume>> getResumesByJobPositionId(@RequestParam Long jobPositionId) {
+		List<Resume> resumes = resumeService.getResumesByJobPositionId(jobPositionId);
+		return new ResponseEntity<>(resumes, HttpStatus.OK);
+	}
+
+	@PutMapping("/update-status")
+	public ResponseEntity<String> updateResumeStatus(@RequestParam Long resumeId, @RequestBody String status,
+			@RequestParam Long jobPositionId) {
+		boolean isUpdated = resumeService.updateResumeStatus(resumeId, status, jobPositionId);
+
+		if (isUpdated) {
+			return new ResponseEntity<>("Resume status updated successfully.", HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>("Failed to update resume status.", HttpStatus.OK);
 		}
+	}
 }

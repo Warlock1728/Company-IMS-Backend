@@ -27,4 +27,8 @@ public class User {
 	@OneToOne(optional = true) 
 	@JoinColumn(name = "profile_id")
 	private UserProfile profile;
+
+	private boolean isCheckedInToday;
+
+	
 }

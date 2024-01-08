@@ -1,5 +1,7 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +17,11 @@ import org.springframework.stereotype.Service;
 
 import com.bytesfarms.companyMain.entity.OtpInfo;
 import com.bytesfarms.companyMain.entity.Role;
+import com.bytesfarms.companyMain.entity.TimeSheet;
 import com.bytesfarms.companyMain.entity.User;
 import com.bytesfarms.companyMain.entity.UserProfile;
 import com.bytesfarms.companyMain.repository.RoleRepository;
+import com.bytesfarms.companyMain.repository.TimeSheetRepository;
 import com.bytesfarms.companyMain.repository.UserProfileRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.UserService;
@@ -35,7 +39,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserProfileRepository userProfileRepository;
-
+	
+	@Autowired
+	private  TimeSheetRepository timeSheetRepository;
 	@Autowired
 	JavaMailSender javaMailSender;
 
@@ -155,8 +161,27 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public List<User> getEmployees() {
-		return userRepository.findByRole_Id(3); // Method to get all employees for IMS Dashboard
+	    List<User> employees =userRepository.findByRoleIdIn(Arrays.asList(2L, 3L)); // Fetch both HR and employees
+
+	    // Iterate through each employee and check if they have checked in today
+	    for (User employee : employees) {
+	        boolean isCheckedInToday = hasCheckedInToday(employee, timeSheetRepository);
+	        employee.setCheckedInToday(isCheckedInToday);
+	    }
+
+	    return employees;
 	}
+
+		private boolean hasCheckedInToday(User employee, TimeSheetRepository timeSheetRepository) {
+			LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+	
+			// Retrieve time sheets for today using the repository method
+			List<TimeSheet> todayTimeSheets = timeSheetRepository.findTodayTimeSheetByUserId(employee.getId(), today,
+					today.plusDays(1) 
+			);
+	
+			return !todayTimeSheets.isEmpty();
+		}
 
 	private void updateProfile(UserProfile existingProfile, UserProfile updatedProfile) {
 

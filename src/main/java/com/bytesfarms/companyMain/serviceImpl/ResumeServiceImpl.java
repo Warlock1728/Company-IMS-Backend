@@ -1,6 +1,7 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,8 @@ public class ResumeServiceImpl implements ResumeService {
 	private JavaMailSender javaMailSender;
 
 	@Override
-	public Long saveResume(String fileName, MultipartFile file, Long jobPositionId, Long userId) {
+	public Long saveResume(MultipartFile file, Long jobPositionId, Long userId, String lastJobTitle, Integer lastJobExperience, String lastJobCompany,
+            BigDecimal expectedSalary) {
 		try {
 
 			Optional<JobPosition> optionalJobPosition = jobPositionRepository.findById(jobPositionId);
@@ -44,12 +46,18 @@ public class ResumeServiceImpl implements ResumeService {
 
 			if (optionalJobPosition.isPresent()) {
 				Resume resume = new Resume();
-				resume.setFileName(fileName);
+				// resume.setFileName(fileName);
 				resume.setFileData(file.getBytes());
 
 				resume.setJobPosition(optionalJobPosition.get());
 				resume.setUser(optionalUser.get());
 				resume.setStatus(ApplicationStatus.SUBMITTED);
+
+				resume.setLastJobTitle(lastJobTitle);
+				resume.setLastJobExperience(lastJobExperience);
+				resume.setLastJobCompany(lastJobCompany);
+				resume.setExpectedSalary(expectedSalary);
+
 				sendSubmissionNotificationEmail(optionalUser.get(), optionalJobPosition.get());
 				return resumeRepository.save(resume).getId();
 			} else {
