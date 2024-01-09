@@ -47,7 +47,13 @@ public class TaskServiceImpl implements TaskService {
 	// Get all tasks for that employee.
 	@Override
 	public List<Task> getTasksByUserId(Long userId) {
-		return taskRepository.findByUserId(userId);
+		if (userId == 0) {
+
+			return taskRepository.findAll();
+		} else {
+
+			return taskRepository.findByUserId(userId);
+		}
 	}
 
 	@Override

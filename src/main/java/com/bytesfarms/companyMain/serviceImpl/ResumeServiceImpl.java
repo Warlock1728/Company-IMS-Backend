@@ -35,40 +35,40 @@ public class ResumeServiceImpl implements ResumeService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
-	@Override
-	public Long saveResume(MultipartFile file, Long jobPositionId, Long userId, String lastJobTitle, Integer lastJobExperience, String lastJobCompany,
-            BigDecimal expectedSalary) {
-		try {
-
-			Optional<JobPosition> optionalJobPosition = jobPositionRepository.findById(jobPositionId);
-
-			Optional<User> optionalUser = userRepository.findById(userId);
-
-			if (optionalJobPosition.isPresent()) {
-				Resume resume = new Resume();
-				// resume.setFileName(fileName);
-				resume.setFileData(file.getBytes());
-
-				resume.setJobPosition(optionalJobPosition.get());
-				resume.setUser(optionalUser.get());
-				resume.setStatus(ApplicationStatus.SUBMITTED);
-
-				resume.setLastJobTitle(lastJobTitle);
-				resume.setLastJobExperience(lastJobExperience);
-				resume.setLastJobCompany(lastJobCompany);
-				resume.setExpectedSalary(expectedSalary);
-
-				sendSubmissionNotificationEmail(optionalUser.get(), optionalJobPosition.get());
-				return resumeRepository.save(resume).getId();
-			} else {
-
+		@Override
+		public Long saveResume(MultipartFile file, Long jobPositionId, Long userId, String lastJobTitle, Integer lastJobExperience, String lastJobCompany,
+	            BigDecimal expectedSalary) {
+			try {
+	
+				Optional<JobPosition> optionalJobPosition = jobPositionRepository.findById(jobPositionId);
+	
+				Optional<User> optionalUser = userRepository.findById(userId);
+	
+				if (optionalJobPosition.isPresent()) {
+					Resume resume = new Resume();
+					// resume.setFileName(fileName);
+					resume.setFileData(file.getBytes());
+	
+					resume.setJobPosition(optionalJobPosition.get());
+					resume.setUser(optionalUser.get());
+					resume.setStatus(ApplicationStatus.SUBMITTED);
+	
+					resume.setLastJobTitle(lastJobTitle);
+					resume.setLastJobExperience(lastJobExperience);
+					resume.setLastJobCompany(lastJobCompany);
+					resume.setExpectedSalary(expectedSalary);
+	
+					sendSubmissionNotificationEmail(optionalUser.get(), optionalJobPosition.get());
+					return resumeRepository.save(resume).getId();
+				} else {
+	
+					return null;
+				}
+			} catch (IOException e) {
+	
+				e.printStackTrace();
 				return null;
 			}
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return null;
-		}
 
 	}
 
