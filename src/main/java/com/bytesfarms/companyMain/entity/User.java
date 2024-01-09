@@ -1,5 +1,7 @@
 package com.bytesfarms.companyMain.entity;
 
+import java.util.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +31,10 @@ public class User {
 	private UserProfile profile;
 
 	private boolean isCheckedInToday;
+
+	private String uuid;
+
+	private Date resetTokenExpiration;
 
 	
 }

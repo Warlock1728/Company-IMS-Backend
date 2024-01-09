@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +19,8 @@ import com.bytesfarms.companyMain.dto.UserDTO;
 import com.bytesfarms.companyMain.entity.User;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.UserService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /*
  * @author Shivendra Singh
@@ -73,6 +74,18 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
         }
     }
+	
+	@PostMapping("/forgotPassword")
+	public String forgetPassword(@RequestParam("email") String email, HttpServletRequest request) {
+		return userService.forgetPassword(email, request);
+	}
+	 
+	
+	@PutMapping("/updatePassword")
+	public String updatePassword(@RequestParam("UUID") String uuid, @RequestParam String password) {
+		return userService.updatePassword(uuid, password);
+ 
+	}
 
     @PutMapping("/update")
     public ResponseEntity<User> updateUser(@RequestParam Long userId, @RequestBody User user) {
@@ -98,6 +111,7 @@ public class UserController {
         return ResponseEntity.ok(employees);
     }
 	
-	
+    
+   
 
 }

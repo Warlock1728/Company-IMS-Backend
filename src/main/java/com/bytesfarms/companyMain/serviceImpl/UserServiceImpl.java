@@ -1,12 +1,16 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,9 @@ import com.bytesfarms.companyMain.repository.UserProfileRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.UserService;
 
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,9 +45,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserProfileRepository userProfileRepository;
-	
+
 	@Autowired
-	private  TimeSheetRepository timeSheetRepository;
+	private TimeSheetRepository timeSheetRepository;
 	@Autowired
 	JavaMailSender javaMailSender;
 
@@ -161,27 +167,26 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public List<User> getEmployees() {
-	    List<User> employees =userRepository.findByRoleIdIn(Arrays.asList(2L, 3L)); // Fetch both HR and employees
+		List<User> employees = userRepository.findByRoleIdIn(Arrays.asList(2L, 3L)); // Fetch both HR and employees
 
-	    // Iterate through each employee and check if they have checked in today
-	    for (User employee : employees) {
-	        boolean isCheckedInToday = hasCheckedInToday(employee, timeSheetRepository);
-	        employee.setCheckedInToday(isCheckedInToday);
-	    }
+		// Iterate through each employee and check if they have checked in today
+		for (User employee : employees) {
+			boolean isCheckedInToday = hasCheckedInToday(employee, timeSheetRepository);
+			employee.setCheckedInToday(isCheckedInToday);
+		}
 
-	    return employees;
+		return employees;
 	}
 
-		private boolean hasCheckedInToday(User employee, TimeSheetRepository timeSheetRepository) {
-			LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
-	
-			// Retrieve time sheets for today using the repository method
-			List<TimeSheet> todayTimeSheets = timeSheetRepository.findTodayTimeSheetByUserId(employee.getId(), today,
-					today.plusDays(1) 
-			);
-	
-			return !todayTimeSheets.isEmpty();
-		}
+	private boolean hasCheckedInToday(User employee, TimeSheetRepository timeSheetRepository) {
+		LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+		// Retrieve time sheets for today using the repository method
+		List<TimeSheet> todayTimeSheets = timeSheetRepository.findTodayTimeSheetByUserId(employee.getId(), today,
+				today.plusDays(1));
+
+		return !todayTimeSheets.isEmpty();
+	}
 
 	private void updateProfile(UserProfile existingProfile, UserProfile updatedProfile) {
 
@@ -259,6 +264,77 @@ public class UserServiceImpl implements UserService {
 		} else {
 			otpStorage.remove(user.getEmail());
 			return false;
+		}
+	}
+
+	@Override
+	public String forgetPassword(String email, HttpServletRequest request) {
+		String uuid = UUID.randomUUID().toString();
+
+		// Set the expiration time
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.MINUTE, 5);
+		Date expirationTime = calendar.getTime();
+
+		User existingUser = userRepository.findUserByEmail(email);
+		if (existingUser != null) {
+			existingUser.setUuid(uuid);
+			existingUser.setResetTokenExpiration(expirationTime);
+			String recipient = email;
+			
+			String template = "Thank you";
+			HashMap<String, String> map = new HashMap<>();
+			String fullUrl = request.getRequestURL().toString();
+			try {
+				URL url = new URL(fullUrl);
+				String host = url.getHost();
+				String scheme = request.getScheme();
+				//String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
+			String link="http://localhost:3000/updatepassword?token="+uuid;
+				map.put("RESET_LINK", link);
+				map.put("user_name", existingUser.getUsername());
+				map.put("CLIENT_MAIL", email);
+//			Long contactNo = returnOrderServiceImpl.getClientConfig().getClient().getContactNo();
+//			String decimalFormat = contactNo.toString();
+//			String num = decimalFormat.substring(0, 3)+"-"+decimalFormat.substring(3, 6)+"-"+decimalFormat.substring(6);
+//			map.put("CLIENT_PHONE", num);
+
+				SimpleMailMessage message = new SimpleMailMessage();
+				message.setTo(email);
+				message.setSubject("Forgot Your Password?");
+				message.setText(existingUser.getUsername() + ", Have you tried reaching us because you forgot your password? ");
+				message.setText("Please visit the below mentioned link to update your password: "+link);
+
+				javaMailSender.send(message);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			userRepository.save(existingUser);// saving user
+			return uuid;
+		}
+		return "Email not found";
+	}
+
+	public String updatePassword(String uuid, String password) {
+		User user = userRepository.findByUuid(uuid);
+		if (user != null) {
+			// Check if the token has expired
+			Date expirationTime = user.getResetTokenExpiration();
+			Date currentTime = new Date();
+			if (expirationTime != null && expirationTime.after(currentTime)) {
+				// Token is not expired, allow password update
+				String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+				user.setPassword(hashedPassword);
+				user.setUuid(null);
+				userRepository.save(user);
+				return "Password Updated Successfully";
+			} else {
+
+				return "Expiration time reached";
+			}
+		} else {
+			return "User with uuid isn't found in database";
 		}
 	}
 }

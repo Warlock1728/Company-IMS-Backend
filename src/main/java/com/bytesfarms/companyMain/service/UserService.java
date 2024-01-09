@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.bytesfarms.companyMain.entity.User;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 public interface UserService {
 	User signUp(User user);
 
@@ -15,4 +17,11 @@ public interface UserService {
 
 	List<User> getEmployees();
 	boolean verifyOtp(User user, String otp) ;
+	
+	
+	//For forgot and update password
+
+	String forgetPassword(String email, HttpServletRequest request);
+
+	String updatePassword(String uuid, String password);
 }

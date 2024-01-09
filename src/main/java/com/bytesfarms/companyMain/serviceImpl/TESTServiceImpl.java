@@ -383,8 +383,6 @@ public class TESTServiceImpl implements TESTService {
 
 	// Testing OM'S CODE
 
-	// NOT WORKING
-
 	@Override
 	public String scheduleMeetbyOM(MeetData meetData)
 			throws IOException, NumberFormatException, GeneralSecurityException {
