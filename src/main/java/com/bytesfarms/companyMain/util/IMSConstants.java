@@ -1,5 +1,8 @@
 package com.bytesfarms.companyMain.util;
 
+import org.springframework.stereotype.Component;
+
+@Component	
 public class IMSConstants {
 
 	public static final String CREATE_ZOOM_MEET = "https://api.zoom.us/v2/users/me/meetings";
@@ -18,5 +21,7 @@ public class IMSConstants {
 	public static final String ZOOM_USER_ID = "shivendrasinghbais14@gmail.com";
 
 	public static final String ZOOM_USER_PASSWORD = "Shivendra@1716";
+
+	public static final String SECRET_KEY = "Bytesfarms@BytewiseManager@765123";
 
 }

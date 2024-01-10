@@ -381,7 +381,7 @@ public class TESTServiceImpl implements TESTService {
 
 //-------------------------------------------------------------------------------------------------------------------------------------	
 
-	// Testing OM'S CODE
+	// Testing Freind'S CODE
 
 	@Override
 	public String scheduleMeetbyOM(MeetData meetData)

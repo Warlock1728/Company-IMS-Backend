@@ -89,7 +89,21 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		timeSheet.setActualMinutes(minutes);
 		timeSheet.setActualSeconds(seconds);
 
+		// Calculating if the person has been on half day , full day or He is absent
+
+		long standardWorkingTime = 8 * 60 + 45; // This is current time in Bytesfarms to complete in day in Minutes
+
+		boolean isHalfDay = totalWorkDuration.toMinutes() < standardWorkingTime || totalWorkDuration.toMinutes()> (4 * 60 + 30) ;
+		boolean isLeaveDay = totalWorkDuration.isZero() || totalWorkDuration.toMinutes() < (4 * 60 + 30);
+
+		boolean isPresentDay = totalWorkDuration.toMinutes() == standardWorkingTime
+				|| totalWorkDuration.toMinutes() > standardWorkingTime;
+
+		timeSheet.setHalfDay(isHalfDay);
+		timeSheet.setLeaveDay(isLeaveDay);
+		timeSheet.setPresentDay(isPresentDay);
 		timeSheetRepository.save(timeSheet);
+
 	}
 
 	@Override

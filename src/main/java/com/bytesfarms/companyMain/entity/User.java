@@ -26,7 +26,7 @@ public class User {
 	@JoinColumn(name = "role_id")
 	private Role role;
 
-	@OneToOne(optional = true) 
+	@OneToOne(optional = true)
 	@JoinColumn(name = "profile_id")
 	private UserProfile profile;
 
@@ -34,7 +34,8 @@ public class User {
 
 	private String uuid;
 
+	private String fixedSalary;
+
 	private Date resetTokenExpiration;
 
-	
 }

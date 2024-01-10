@@ -1,8 +1,12 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,6 +15,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +37,15 @@ import com.bytesfarms.companyMain.repository.TimeSheetRepository;
 import com.bytesfarms.companyMain.repository.UserProfileRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.UserService;
+import com.bytesfarms.companyMain.util.IMSConstants;
 
-import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+
+/*
+ * @author SS
+ */
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -48,8 +61,14 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private TimeSheetRepository timeSheetRepository;
+
 	@Autowired
 	JavaMailSender javaMailSender;
+
+	@Autowired
+	IMSConstants imsConstants;
+
+	private static final String SECRET_KEY = IMSConstants.SECRET_KEY;
 
 	private Map<String, OtpInfo> otpStorage = new HashMap<>();
 	private static final long OTP_EXPIRATION_TIME_MILLIS = 5 * 60 * 1000; // 5 minutes
@@ -138,6 +157,14 @@ public class UserServiceImpl implements UserService {
 				existingUser.setRole(user.getRole());
 			}
 
+			if (user.getFixedSalary() != null) {
+				String salary = user.getFixedSalary();
+
+				String encryptedSalary = encrypt(salary);
+
+				existingUser.setFixedSalary(encryptedSalary);
+			}
+
 			if (user.getProfile() != null) {
 				UserProfile updatedProfile = user.getProfile();
 
@@ -161,6 +188,31 @@ public class UserServiceImpl implements UserService {
 
 			return userRepository.save(existingUser);
 		} else {
+			return null;
+		}
+	}
+
+	// Method to encrypt
+	private byte[] deriveKey(String secret) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			return digest.digest(secret.getBytes(StandardCharsets.UTF_8));
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private String encrypt(String salary) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			byte[] derivedKey = deriveKey(SECRET_KEY);
+			SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
+			cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+			byte[] encryptedBytes = cipher.doFinal(salary.getBytes(StandardCharsets.UTF_8));
+			return Base64.getEncoder().encodeToString(encryptedBytes);
+		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -281,7 +333,7 @@ public class UserServiceImpl implements UserService {
 			existingUser.setUuid(uuid);
 			existingUser.setResetTokenExpiration(expirationTime);
 			String recipient = email;
-			
+
 			String template = "Thank you";
 			HashMap<String, String> map = new HashMap<>();
 			String fullUrl = request.getRequestURL().toString();
@@ -289,8 +341,8 @@ public class UserServiceImpl implements UserService {
 				URL url = new URL(fullUrl);
 				String host = url.getHost();
 				String scheme = request.getScheme();
-				//String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
-			String link="http://localhost:3000/updatepassword?token="+uuid;
+				// String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
+				String link = "http://localhost:3000/updatepassword?token=" + uuid;
 				map.put("RESET_LINK", link);
 				map.put("user_name", existingUser.getUsername());
 				map.put("CLIENT_MAIL", email);
@@ -302,8 +354,9 @@ public class UserServiceImpl implements UserService {
 				SimpleMailMessage message = new SimpleMailMessage();
 				message.setTo(email);
 				message.setSubject("Forgot Your Password?");
-				message.setText(existingUser.getUsername() + ", Have you tried reaching us because you forgot your password? ");
-				message.setText("Please visit the below mentioned link to update your password: "+link);
+				message.setText(
+						existingUser.getUsername() + ", Have you tried reaching us because you forgot your password? ");
+				message.setText("Please visit the below mentioned link to update your password: " + link);
 
 				javaMailSender.send(message);
 

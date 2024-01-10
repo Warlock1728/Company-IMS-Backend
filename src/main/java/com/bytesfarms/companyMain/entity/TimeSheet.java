@@ -49,4 +49,8 @@ public class TimeSheet {
 
 	private String year;
 
+	private boolean halfDay;
+	private boolean presentDay;
+	private boolean leaveDay;
+
 }

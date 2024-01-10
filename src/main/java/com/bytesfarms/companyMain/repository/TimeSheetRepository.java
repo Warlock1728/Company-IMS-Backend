@@ -3,6 +3,7 @@ package com.bytesfarms.companyMain.repository;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,5 +23,8 @@ public interface TimeSheetRepository extends JpaRepository<TimeSheet, Long> {
 			@Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 
 	List<TimeSheet> findByUserId(Long userId);
+
+	@Query("SELECT t FROM TimeSheet t WHERE t.user.id = :userId AND t.month = :month")
+	List<TimeSheet> findByUserIdAndMonth(@Param("userId") Long userId, @Param("month") String month);
 
 }

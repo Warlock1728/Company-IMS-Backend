@@ -13,21 +13,19 @@ import lombok.Data;
 @Entity
 @Data
 public class Payroll {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+	private String grossSalary;
+	private double netPay;
+	private double deductions;
+	private double bonus;
+	
+	private String month;
+	
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    private LocalDate dateOfJoining;
-    private double basicSalary;
-    private double adHoc;
-    private double bonus;
-    private double grossPay;
-    private double deductions;
-   
-
-    
 }
