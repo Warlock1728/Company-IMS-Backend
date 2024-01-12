@@ -2,11 +2,13 @@ package com.bytesfarms.companyMain.entity;
 
 import java.util.Date;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
@@ -37,5 +39,9 @@ public class User {
 	private String fixedSalary;
 
 	private Date resetTokenExpiration;
+	
+	@Lob
+	@Column(name = "image", columnDefinition = "LONGBLOB", length = Integer.MAX_VALUE)
+    private byte[] image;
 
 }

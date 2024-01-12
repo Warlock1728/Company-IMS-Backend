@@ -2,6 +2,8 @@ package com.bytesfarms.companyMain.service;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.bytesfarms.companyMain.entity.User;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,4 +26,6 @@ public interface UserService {
 	String forgetPassword(String email, HttpServletRequest request);
 
 	String updatePassword(String uuid, String password);
+
+	void saveImage(Long userId, MultipartFile image);
 }

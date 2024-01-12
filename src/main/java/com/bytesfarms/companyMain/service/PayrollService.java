@@ -14,6 +14,6 @@ public interface PayrollService {
 
 	List<Payroll> generatePayslips(User user, String month);
 
-	byte[] generatePdf(String grossSalary, double netPay, double deductions, double bonus, String month);
+	byte[] generatePdf(String grossSalary, double netPay, double deductions, double bonus, String month, User userId);
 
 }

@@ -1,5 +1,6 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
+import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -26,6 +27,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bytesfarms.companyMain.entity.OtpInfo;
 import com.bytesfarms.companyMain.entity.Role;
@@ -45,7 +47,6 @@ import jakarta.servlet.http.HttpServletRequest;
 /*
  * @author SS
  */
-
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -388,6 +389,19 @@ public class UserServiceImpl implements UserService {
 			}
 		} else {
 			return "User with uuid isn't found in database";
+		}
+	}
+
+	@Override
+	public void saveImage(Long userId, MultipartFile image) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+		try {
+			user.setImage(image.getBytes());
+			userRepository.save(user);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to save image for user with id: " + userId, e);
 		}
 	}
 }

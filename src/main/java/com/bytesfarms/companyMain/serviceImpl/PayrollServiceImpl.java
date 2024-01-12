@@ -1,10 +1,11 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -20,20 +21,22 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templateresolver.StringTemplateResolver;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import com.bytesfarms.companyMain.entity.Payroll;
 import com.bytesfarms.companyMain.entity.TimeSheet;
 import com.bytesfarms.companyMain.entity.User;
+import com.bytesfarms.companyMain.entity.UserProfile;
 import com.bytesfarms.companyMain.repository.PayrollRepository;
 import com.bytesfarms.companyMain.repository.TimeSheetRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.PayrollService;
 import com.bytesfarms.companyMain.util.IMSConstants;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
 
+import org.apache.commons.io.IOUtils;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -167,24 +170,88 @@ public class PayrollServiceImpl implements PayrollService {
 	}
 
 	@Override
-	public byte[] generatePdf(String grossSalary, double netPay, double deductions, double bonus, String month) {
-		Document document = new Document();
+	public byte[] generatePdf(String grossSalary, double netPay, double deductions, double bonus, String month,
+			User userId) {
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			PdfWriter.getInstance(document, baos);
-			document.open();
-			document.add(new Paragraph("Gross Salary: " + grossSalary));
-			document.add(new Paragraph("Net Pay: " + netPay));
-			document.add(new Paragraph("Deductions: " + deductions));
-			document.add(new Paragraph("Bonus: " + bonus));
-			document.add(new Paragraph("Month: " + month));
-			document.close();
+
 			
+			//Load HTML directly
+			InputStream htmlInputStream = getClass().getResourceAsStream("/pdf.html");
+			String htmlContent = IOUtils.toString(htmlInputStream, StandardCharsets.UTF_8);
+			
+			
+			//Load Signatures
+			InputStream signatureInputStream = getClass().getResourceAsStream("/CEOsignatures.png");
+			byte[] signatureBytes = IOUtils.toByteArray(signatureInputStream);
+			String signatureBase64 = Base64.getEncoder().encodeToString(signatureBytes);
+			
+			//Load Logo of Bytesfarms
+			InputStream LogoInputStream = getClass().getResourceAsStream("/LOGO.png");
+			byte[] logoBytes = IOUtils.toByteArray(LogoInputStream);
+			String logoBase64 = Base64.getEncoder().encodeToString(logoBytes);
+			
+			
+			
+
+			User user = userRepository.findById(userId.getId()).orElse(null);
+
+			if (user != null) {
+				// Fetch profile details associated with the user
+				UserProfile profile = user.getProfile();
+
+				if (profile != null) {
+					// Process Thymeleaf template with user and profile details
+					htmlContent = processThymeleafTemplate(htmlContent, grossSalary, netPay, deductions, bonus, month,
+							user.getUsername(), profile.getDesignation(), signatureBase64,logoBase64);
+				}
+			}
+
+			// Process Thymeleaf template
+			// htmlContent = processThymeleafTemplate(htmlContent, grossSalary, netPay,
+			// deductions, bonus, month);
+
+//			log.info("HTML CONTENT : " + htmlContent);
+
+			ITextRenderer renderer = new ITextRenderer();
+			renderer.setDocumentFromString(htmlContent);
+			renderer.layout();
+			renderer.createPDF(baos);
+
 			log.info("Generating payroll pdf : ");
-			
+
 			return baos.toByteArray();
-		} catch (DocumentException | IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
+
+	private String processThymeleafTemplate(String template, String grossSalary, double netPay, double deductions,
+			double bonus, String month, String employeeName, String designation, String signatureBase64, String logoBase64) {
+
+		TemplateEngine templateEngine = new TemplateEngine();
+		templateEngine.setTemplateResolver(new StringTemplateResolver());
+
+		Context context = new Context();
+		context.setVariable("grossSalary", grossSalary);
+		context.setVariable("netPay", netPay);
+		context.setVariable("deductions", deductions);
+		context.setVariable("bonus", bonus);
+		context.setVariable("month", month);
+		context.setVariable("Payslip", "PASSED");
+
+		context.setVariable("employeeName", employeeName);
+		context.setVariable("designation", designation);
+		context.setVariable("year", LocalDateTime.now().getYear());
+
+		context.setVariable("signatureImageSource", "data:image/png;base64," + signatureBase64);
+		
+		context.setVariable("LogoImageSource", "data:image/png;base64," + logoBase64);
+
+		String processedHtml = templateEngine.process(template, context);
+
+		//log.info("BRO CHAL NI RAHA YAR" + processedHtml.toString());
+		return processedHtml.toString();
+	}
+
 }

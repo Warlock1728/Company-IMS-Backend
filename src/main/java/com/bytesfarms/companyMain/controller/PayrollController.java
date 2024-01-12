@@ -54,9 +54,9 @@ public class PayrollController {
 	}
 
 	@PostMapping("/generatePdf")
-	public ResponseEntity<byte[]> generatePdf(@RequestBody PayrollRequest payrollRequest) {
+	public ResponseEntity<byte[]> generatePdf(@RequestBody PayrollRequest payrollRequest,@RequestParam User userId) {
 		byte[] pdfContent = payrollService.generatePdf(payrollRequest.getGrossSalary(), payrollRequest.getNetPay(),
-				payrollRequest.getDeductions(), payrollRequest.getBonus(), payrollRequest.getMonth());
+				payrollRequest.getDeductions(), payrollRequest.getBonus(), payrollRequest.getMonth(), userId);
 		return PdfUtil.createResponse(pdfContent, "payroll.pdf");
 	}
 

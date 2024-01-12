@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<title th:text="'Payslip ' + ${year}" />
+
+<style>
+body {
+	font-family: 'Arial', sans-serif;
+	background-color: #f8f8f8;
+	margin: 0;
+	padding: 0;
+	margin-right:60px;
+}
+
+.payslip {
+	width: 100%;
+	max-width: 700px;
+	margin: 20px auto;
+	padding: 20px;
+	border: 1px solid #ccc;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	background-color: #fff;
+}
+
+.header img {
+	width: 100%;
+	max-width: 300px;
+	height: auto;
+	margin: 0 auto;
+	display: block;
+}
+
+.header h1 {
+	color: #333;
+	margin: 10px 0;
+	font-size: 24px;
+}
+
+.employee-info h2, .employee-info h3 {
+	color: #555;
+	margin: 5px 0;
+}
+
+.payslip-details table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+th, td {
+	border: 1px solid #ccc;
+	padding: 12px;
+	text-align: left;
+}
+
+th {
+	background-color: #f2f2f2;
+}
+
+.signature {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 20px;
+}
+
+.signature h3 {
+	color: #555;
+	margin: 0;
+	font-size: 16px;
+}
+
+.signature img {
+	width: 100px;
+	height: auto;
+	border-radius: 50%;
+}
+</style>
+</head>
+
+<body>
+	<div class="payslip">
+		<div class="header">
+			 <img th:src="${LogoImageSource}" alt="signature" />
+			<h1 th:text="'Pay Slip ' + ${year}">Pay Slip</h1>
+		</div>
+		<div class="employee-info">
+			<h2 th:text="${employeeName}">Employee Name</h2>
+			<h3 th:text="${designation}">Employee Designation</h3>
+			<h3 th:text="${month}">Month</h3>
+		</div>
+		<div class="payslip-details">
+			<table>
+				<tr>
+					<th>Description</th>
+					<th>Amount</th>
+				</tr>
+				<tr>
+					<td>Gross Salary</td>
+					<td th:text="${grossSalary}">0.00</td>
+				</tr>
+				<tr>
+					<td>Net Pay</td>
+					<td th:text="${netPay}">0.00</td>
+				</tr>
+				<tr>
+					<td>Deductions</td>
+					<td th:text="${deductions}">0.00</td>
+				</tr>
+				<tr>
+					<td>Bonus</td>
+					<td th:text="${bonus}">0.00</td>
+				</tr>
+				<tr>
+					<td>Month</td>
+					<td th:text="${month}">January</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="signature">
+			
+			 <img th:src="${signatureImageSource}" alt="signature" />
+			<h3>Ankit Godha</h3>
+			<h3>CEO</h3>
+			<h3>Authorized Signatory</h3>
+		</div>
+	</div>
+</body>
+</html>
