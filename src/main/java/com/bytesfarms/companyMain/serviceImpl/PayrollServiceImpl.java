@@ -42,7 +42,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class PayrollServiceImpl implements PayrollService {
 
-	private static final Logger log = LoggerFactory.getLogger(TESTServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(PayrollServiceImpl.class);
 
 	@Autowired
 	private PayrollRepository payrollRepository;
