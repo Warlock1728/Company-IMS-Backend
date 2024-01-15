@@ -236,6 +236,14 @@
 			<artifactId>thymeleaf</artifactId>
 			<version>3.1.2.RELEASE</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>net.sf.biweekly</groupId>
+			<artifactId>biweekly</artifactId>
+			<version>0.6.3</version>
+		</dependency>
+		
+		
 
 		<dependency>
 			<groupId>com.itextpdf</groupId>

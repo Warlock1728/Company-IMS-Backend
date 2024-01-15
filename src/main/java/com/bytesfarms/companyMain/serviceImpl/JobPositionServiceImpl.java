@@ -1,21 +1,16 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
-import java.io.IOException;
 import java.util.List;
 
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.bytesfarms.companyMain.dto.JobPositionDTO;
-
 import com.bytesfarms.companyMain.entity.JobPosition;
 import com.bytesfarms.companyMain.repository.JobPositionRepository;
 import com.bytesfarms.companyMain.service.JobPositionService;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 
 @Service
 public class JobPositionServiceImpl implements JobPositionService {
@@ -75,12 +70,6 @@ public class JobPositionServiceImpl implements JobPositionService {
 
 	@Override
 	public JobPositionDTO shortlistCandidates(Long jobPositionId, List<Long> applicationIds) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public JobPositionDTO scheduleInterviews(Long jobPositionId, List<Long> applicationIds, String interviewDateTime) {
 		// TODO Auto-generated method stub
 		return null;
 	}

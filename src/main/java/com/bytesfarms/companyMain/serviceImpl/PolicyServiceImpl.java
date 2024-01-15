@@ -86,7 +86,7 @@ public class PolicyServiceImpl implements PolicyService {
 				document.close();
 
 				log.info("Generated PDF for Policy: {}", policy.getTitle());
-
+				
 				return baos.toByteArray();
 			} else {
 				log.warn("Policy not found for ID: {}", id);
