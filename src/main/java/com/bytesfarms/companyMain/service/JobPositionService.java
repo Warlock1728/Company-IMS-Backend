@@ -28,6 +28,6 @@ public interface JobPositionService {
 
 	JobPositionDTO shortlistCandidates(Long jobPositionId, List<Long> applicationIds);
 
-	JobPositionDTO scheduleInterviews(Long jobPositionId, List<Long> applicationIds, String interviewDateTime);
+
 
 }

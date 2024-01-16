@@ -101,6 +101,9 @@ public class PayrollServiceImpl implements PayrollService {
 			payroll.setBonus(3000);
 			payroll.setUser(user);
 			payroll.setMonth(month.toString());
+			
+			payroll.setLeaveDays(totalLeavesTaken);
+			payroll.setHalfDays(totalHalfDaysTaken);
 
 			payrollRepository.save(payroll);
 
@@ -176,7 +179,7 @@ public class PayrollServiceImpl implements PayrollService {
 
 			
 			//Load HTML directly
-			InputStream htmlInputStream = getClass().getResourceAsStream("/pdf.html");
+			InputStream htmlInputStream = getClass().getResourceAsStream("/payslip.html");
 			String htmlContent = IOUtils.toString(htmlInputStream, StandardCharsets.UTF_8);
 			
 			

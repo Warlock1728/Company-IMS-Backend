@@ -1,6 +1,7 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -14,15 +15,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.UUID;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.io.IOUtils;
 import org.mindrot.jbcrypt.BCrypt;
+import org.mortbay.log.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -41,6 +47,12 @@ import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.UserService;
 import com.bytesfarms.companyMain.util.IMSConstants;
 
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -67,6 +79,9 @@ public class UserServiceImpl implements UserService {
 	JavaMailSender javaMailSender;
 
 	@Autowired
+	EmailSender emailSender;
+
+	@Autowired
 	IMSConstants imsConstants;
 
 	private static final String SECRET_KEY = IMSConstants.SECRET_KEY;
@@ -75,7 +90,7 @@ public class UserServiceImpl implements UserService {
 	private static final long OTP_EXPIRATION_TIME_MILLIS = 5 * 60 * 1000; // 5 minutes
 
 	@Override
-	public User signUp(User user) {
+	public User signUp(User user) throws IOException, MessagingException {
 		if (user == null || user.getUsername() == null || user.getEmail() == null || user.getPassword() == null
 				|| user.getRole() == null || user.getRole().getRoleName() == null) {
 			throw new IllegalArgumentException("All fields are required for user registration");
@@ -285,13 +300,38 @@ public class UserServiceImpl implements UserService {
 		return String.valueOf(otp);
 	}
 
-	public void sendOtpToEmail(String email, String otp) {
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(email);
-		message.setSubject("OTP for Registration");
-		message.setText("Your OTP for registration as a Guest to ByteWise Manager is: " + otp);
+	public void sendOtpToEmail(String email, String otp) throws IOException, MessagingException {
 
-		javaMailSender.send(message);
+		InputStream logoInputStream = getClass().getResourceAsStream("/BytewiseLogo.png");
+		byte[] logoBytes = IOUtils.toByteArray(logoInputStream);
+		String logoBase64 = Base64.getEncoder().encodeToString(logoBytes);
+
+		String emailTemplate = loadHtmlTemplate("/OTP.html");
+		String subject = "Your OTP to Sign in to ByteWise Manager";
+
+		HashMap<String, String> map = new HashMap<>();
+		map.put("BytewiseLogo", logoBase64);
+		map.put("OTP", otp);
+		
+		
+		//Log.info("This is template : : "+ emailTemplate);
+		Log.info("These are context map objects : : "+ map);
+
+		try {
+
+			emailSender.sendEmail(email, emailTemplate, subject, map);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private String loadHtmlTemplate(String templatePath) {
+		try (InputStream inputStream = new ClassPathResource(templatePath).getInputStream();
+				Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name())) {
+			return scanner.useDelimiter("\\A").next();
+		} catch (IOException e) {
+			throw new RuntimeException("Error loading HTML template", e);
+		}
 	}
 
 	public boolean verifyOtp(User user, String userEnteredOtp) {

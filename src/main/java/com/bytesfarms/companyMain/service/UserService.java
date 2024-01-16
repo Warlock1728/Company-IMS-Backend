@@ -1,15 +1,17 @@
 package com.bytesfarms.companyMain.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bytesfarms.companyMain.entity.User;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserService {
-	User signUp(User user);
+	User signUp(User user) throws IOException, MessagingException;
 
 	User signIn(String email, String password);
 

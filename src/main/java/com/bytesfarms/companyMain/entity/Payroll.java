@@ -28,4 +28,7 @@ public class Payroll {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
+	private int leaveDays;
+	private int halfDays;
+
 }

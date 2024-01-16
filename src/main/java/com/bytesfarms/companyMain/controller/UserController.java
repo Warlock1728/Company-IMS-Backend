@@ -1,5 +1,6 @@
 package com.bytesfarms.companyMain.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +23,7 @@ import com.bytesfarms.companyMain.entity.User;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.UserService;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 
 /*
@@ -38,7 +40,7 @@ public class UserController {
 	private UserRepository userRepository;
 
 	@PostMapping("/signup")
-	public ResponseEntity<User> signUp(@RequestBody User user) {
+	public ResponseEntity<User> signUp(@RequestBody User user) throws IOException, MessagingException {
 		User createdUser = userService.signUp(user);
 		return ResponseEntity.ok(createdUser);
 	}

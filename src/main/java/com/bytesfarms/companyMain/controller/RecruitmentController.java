@@ -2,29 +2,21 @@ package com.bytesfarms.companyMain.controller;
 
 import java.util.List;
 
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.bytesfarms.companyMain.dto.JobPositionDTO;
-import com.bytesfarms.companyMain.entity.Resume;
 import com.bytesfarms.companyMain.entity.JobPosition;
-import com.bytesfarms.companyMain.entity.ScheduleInterviewRequest;
 import com.bytesfarms.companyMain.service.JobPositionService;
-
-import jakarta.validation.Valid;
 
 /*
  * @author Shivendra Singh
@@ -63,24 +55,10 @@ public class RecruitmentController {
 	// Now for applicants to add , and for admins to review shortlist and schedule
 	// interviews.
 
-	
-	
-	
-
-	
-
 	@PutMapping("/positions/shortlist/applicant")
 	public ResponseEntity<JobPositionDTO> shortlistCandidates(@RequestParam Long id,
 			@RequestBody List<Long> applicationIds) {
 		JobPositionDTO updatedJobPosition = jobPositionService.shortlistCandidates(id, applicationIds);
-		return new ResponseEntity<>(updatedJobPosition, HttpStatus.OK);
-	}
-
-	@PutMapping("/positions/schedule-interviews")
-	public ResponseEntity<JobPositionDTO> scheduleInterviews(@RequestParam Long id,
-			@RequestBody ScheduleInterviewRequest request) {
-		JobPositionDTO updatedJobPosition = jobPositionService.scheduleInterviews(id, request.getApplicationIds(),
-				request.getInterviewDateTime());
 		return new ResponseEntity<>(updatedJobPosition, HttpStatus.OK);
 	}
 

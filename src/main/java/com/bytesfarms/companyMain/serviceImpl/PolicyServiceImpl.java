@@ -98,14 +98,24 @@ public class PolicyServiceImpl implements PolicyService {
 		}
 	}
 
-	private String processPolicyTemplate(String template, String content) {
-		TemplateEngine templateEngine = new TemplateEngine();
-		templateEngine.setTemplateResolver(new StringTemplateResolver());
+	@Override
+	public String deletePolicy(Long id) {
+		Optional<Policy> policyOptional = policyRepository.findById(id);
 
-		Context context = new Context();
-		context.setVariable("policyContent", content);
-
-		return templateEngine.process(template, context);
+		if (policyOptional.isPresent()) {
+			Policy policy = policyOptional.get();
+			
+			policyRepository.deleteById(id);
+			
+			log.info("Deleted Policy: {}", policy.getTitle());
+			
+			return  policy.getTitle() + " has been deleted";
+		} else {
+			
+			log.warn("Policy not found for ID: {}", id);
+			
+			return "Policy not found for ID: " + id;
+		}
 	}
 
 }
