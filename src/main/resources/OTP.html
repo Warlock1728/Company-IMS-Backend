@@ -1,70 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OTP for Registration</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f8f8;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-      }
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OTP for Registration</title>
+<style>
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background-color: #f8f8f8;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+}
 
-      .container {
-        max-width: 800px;
-        width: 100%;
-        margin: 20px;
-        background-color: #ffffff;
-        padding: 40px;
-        border-radius: 10px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-      }
+.container {
+	max-width: 800px;
+	width: 100%;
+	margin: 20px;
+	background-color: #ffffff;
+	padding: 40px;
+	border-radius: 10px;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
 
-      .header {
-        text-align: center;
-      }
+.header {
+	text-align: center;
+}
 
-      .logo {
-        max-width: 150px;
-        height: auto;
-      }
+.logo {
+	max-width: 150px;
+	height: auto;
+}
 
-      .otp-section {
-        margin-top: 30px;
-        text-align: center;
-      }
+.otp-section {
+	margin-top: 30px;
+	text-align: center;
+}
 
-      h2 {
-        margin-top: 0;
-        color: #333;
-      }
+h2 {
+	margin-top: 0;
+	color: #333;
+}
 
-      h3 {
-        margin: 15px 0;
-        color: #4CAF50;
-      }
+h3 {
+	margin: 15px 0;
+	color: #4CAF50;
+}
 
-      p {
-        color: #555;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <img src="https://tehran-assets.s3.amazonaws.com/static/why-image.png" alt="ByteWise Manager Logo" class="logo" />
-        <h2>ByteWise Manager</h2>
-      </div>
-      <div class="otp-section">
-        <p>Your One-Time Password (OTP) for registration to ByteWise Manager is:</p>
-        <h3>$!{OTP}</h3>
-      </div>
-    </div>
-  </body>
+p {
+	color: #555;
+}
+
+.logo1 {
+	display: block;
+	margin: 20px auto;
+	max-width: 20%;
+	max-height: 20%;
+}
+.footer {
+	margin-top: 20px;
+	padding: 10px;
+	text-align: center;
+	background-color: #142257;
+	color: #ffffff;
+	border-radius: 0 0 8px 8px;
+}
+
+.footer p {
+	color: #ffffff;
+	font-size: 18px;  /* Set the color for paragraphs inside the footer */
+}
+
+.footer img {
+	display: block;
+	margin: 20px auto;
+	max-width: 30%;
+	max-height: 30%;
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<img class="logo1"
+			src="https://i.postimg.cc/MGGWQnNd/Bytewise-Logo.png"
+			alt="ByteWise Manager Logo" title="ByteWise Manager Logo">
+		<div class="header">
+			<h2>ByteWise Manager</h2>
+			<img
+				src="https://tehran-assets.s3.amazonaws.com/static/why-image.png"
+				alt="ByteWise Manager Logo" class="logo" />
+
+		</div>
+		<div class="otp-section">
+			<p>Your One-Time Password (OTP) for registration to ByteWise
+				Manager is:</p>
+			<h3>$!{OTP}</h3>
+		</div>
+		<div class="footer">
+			<img class="logo3"
+				src="https://i.postimg.cc/vB656J8B/BFT-ORANGE-TRANSPARENT.png"
+				alt="BFT Logo" title="BFT Logo">
+			<p class="contact-details">For further assistance, contact us at
+				managerbytewise@gmail.com</p>
+			<p>© 2024 BytesFarms Technologies. All rights reserved.</p>
+		</div>
+	</div>
+</body>
 </html>
