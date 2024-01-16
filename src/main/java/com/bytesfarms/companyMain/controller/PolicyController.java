@@ -1,11 +1,10 @@
 package com.bytesfarms.companyMain.controller;
 
-import java.io.Reader;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +33,7 @@ public class PolicyController {
 		return policyService.savePolicy(policy);
 	}
 
-	// Update an existing polic content
+	// Update an existing policy	 content
 	@PutMapping("/update")
 	public String updatePolicyContent(@RequestParam Long id, @RequestBody Policy policy) {
 		return policyService.updatePolicyContent(id, policy);
@@ -45,4 +44,13 @@ public class PolicyController {
 	public byte[] updatePolicyPdf(@RequestParam Long id) {
 		return policyService.createPolicyPdf(id);
 	}
+	
+	
+	//Delete a policy
+	@DeleteMapping("/delete")
+	public String deletePolicy(@RequestParam Long id) {
+		return policyService.deletePolicy(id);
+	}
+	
+	
 }

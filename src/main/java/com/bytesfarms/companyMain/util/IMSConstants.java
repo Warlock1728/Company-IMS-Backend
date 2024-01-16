@@ -34,5 +34,20 @@ public class IMSConstants {
 	public static final String ZOOM_USER_PASSWORD = "Shivendra@1716";
 
 	public static final String SECRET_KEY = "Bytesfarms@BytewiseManager@765123";
+	
+	public static final String TRUE = "true";
+	public static final String FALSE = "false";
+	public static final String MAIL_USERNAME = "eventify.notifications@gmail.com";
+	public static final String MAIL_PASSWORD = "xeiefuptnfjzdyhv";
+
+	public static final String SMTP_MAIL_HOST ="smtp.gmail.com";
+	public static final String SMTP_MAIL_PORT ="587";
+	
+	
+	
+	public static final String SMTP_HOST = "mail.smtp.host";
+	public static final String SMTP_PORT = "mail.smtp.port";
+	public static final String SMTP_AUTH = "mail.smtp.auth";
+	public static final String SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
 
 }

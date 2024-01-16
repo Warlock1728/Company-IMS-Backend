@@ -17,4 +17,6 @@ public interface PolicyService {
 
 	String updatePolicyContent(Long id, Policy policy);
 
+	String deletePolicy(Long id);
+
 }
