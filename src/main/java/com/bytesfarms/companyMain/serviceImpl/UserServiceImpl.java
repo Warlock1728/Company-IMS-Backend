@@ -312,10 +312,9 @@ public class UserServiceImpl implements UserService {
 		HashMap<String, String> map = new HashMap<>();
 		map.put("BytewiseLogo", logoBase64);
 		map.put("OTP", otp);
-		
-		
-		//Log.info("This is template : : "+ emailTemplate);
-		Log.info("These are context map objects : : "+ map);
+
+		// Log.info("This is template : : "+ emailTemplate);
+		Log.info("These are context map objects : : " + map);
 
 		try {
 
@@ -373,9 +372,7 @@ public class UserServiceImpl implements UserService {
 		if (existingUser != null) {
 			existingUser.setUuid(uuid);
 			existingUser.setResetTokenExpiration(expirationTime);
-			String recipient = email;
 
-			String template = "Thank you";
 			HashMap<String, String> map = new HashMap<>();
 			String fullUrl = request.getRequestURL().toString();
 			try {
@@ -384,22 +381,12 @@ public class UserServiceImpl implements UserService {
 				String scheme = request.getScheme();
 				// String link = scheme + "://" + host + "/updatepassword?token=" + uuid;
 				String link = "http://localhost:3000/updatepassword?token=" + uuid;
+
 				map.put("RESET_LINK", link);
-				map.put("user_name", existingUser.getUsername());
-				map.put("CLIENT_MAIL", email);
-//			Long contactNo = returnOrderServiceImpl.getClientConfig().getClient().getContactNo();
-//			String decimalFormat = contactNo.toString();
-//			String num = decimalFormat.substring(0, 3)+"-"+decimalFormat.substring(3, 6)+"-"+decimalFormat.substring(6);
-//			map.put("CLIENT_PHONE", num);
+				String emailTemplate = loadHtmlTemplate("/ForgotPassword.html");
+				String subject = "Forgot Your Password ? ";
 
-				SimpleMailMessage message = new SimpleMailMessage();
-				message.setTo(email);
-				message.setSubject("Forgot Your Password?");
-				message.setText(
-						existingUser.getUsername() + ", Have you tried reaching us because you forgot your password? ");
-				message.setText("Please visit the below mentioned link to update your password: " + link);
-
-				javaMailSender.send(message);
+				emailSender.sendEmail(email, emailTemplate, subject, map);
 
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -1,11 +1,18 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -17,6 +24,8 @@ import com.bytesfarms.companyMain.repository.LeaveRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.LeaveService;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.AddressException;
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
@@ -30,6 +39,9 @@ public class LeaveServiceImpl implements LeaveService {
 
 	@Autowired
 	JavaMailSender javaMailSender;
+
+	@Autowired
+	EmailSender emailSender;
 
 	@Override
 	public boolean applyLeave(LeaveRequestDTO leaveRequestDTO, Long userId) {
@@ -49,7 +61,7 @@ public class LeaveServiceImpl implements LeaveService {
 			leaveRequest.setStatus("Pending");
 			leaveRepository.save(leaveRequest);
 
-			sendLeaveApplicationEmail(user);
+			sendLeaveApplicationEmail(user, leaveRequestDTO.getStartDate(), leaveRequestDTO.getEndDate());
 
 			return true;
 		} catch (Exception ex) {
@@ -143,32 +155,52 @@ public class LeaveServiceImpl implements LeaveService {
 		return leaveDTO;
 	}
 
-	private void sendLeaveApplicationEmail(User user) {
+	private void sendLeaveApplicationEmail(User user, LocalDate startDate, LocalDate endDate)
+			throws AddressException, MessagingException {
 
 		List<String> hrAdminEmails = userRepository.findByRoleIdIn(Arrays.asList(1L, 2L)).stream().map(User::getEmail)
 				.collect(Collectors.toList());
 
 		if (!hrAdminEmails.isEmpty()) {
-			SimpleMailMessage message = new SimpleMailMessage();
-			message.setTo(hrAdminEmails.toArray(new String[0]));
-			message.setSubject("Leave Application Notification");
-			message.setText("A leave has been applied by user: " + user.getUsername() + ". Please check.");
 
-			javaMailSender.send(message);
+			HashMap<String, String> map = new HashMap<>();
+			map.put("userName", user.getUsername());
+			map.put("startDate", startDate.toString());
+			map.put("endDate", endDate.toString());
+
+			String subject = "Leave Application Notification";
+
+			String emailTemplate = loadHtmlTemplate("/Leave-Notification-Admin.html");
+
+			for (String email : hrAdminEmails) {
+				emailSender.sendEmail(email, emailTemplate, subject, map);
+			}
 		} else {
 
 			System.out.println("No HR or Admin email addresses found.");
 		}
 	}
 
-	private void sendLeaveStatusUpdateEmail(User user, String newStatus) {
+	private String loadHtmlTemplate(String templatePath) {
+		try (InputStream inputStream = new ClassPathResource(templatePath).getInputStream();
+				Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name())) {
+			return scanner.useDelimiter("\\A").next();
+		} catch (IOException e) {
+			throw new RuntimeException("Error loading HTML template", e);
+		}
+	}
 
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(user.getEmail());
-		message.setSubject("Leave Status Update Notification");
-		message.setText("Your leave status has been updated to: " + newStatus + ". Please check.");
+	private void sendLeaveStatusUpdateEmail(User user, String newStatus) throws AddressException, MessagingException {
 
-		javaMailSender.send(message);
+		String subject = "We have an update on your Leave Notification !";
+		String emailTemplate = loadHtmlTemplate("/Leave-Status-Update.html");
+
+		HashMap<String, String> map = new HashMap<>();
+		map.put("newStatus", newStatus);
+		map.put("userName", user.getUsername());
+
+		emailSender.sendEmail(user.getEmail(), emailTemplate, subject, map);
+
 	}
 
 }
