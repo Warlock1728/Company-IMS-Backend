@@ -46,8 +46,8 @@ public class CompanyImsConfig {
 		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 		mailSender.setHost("smtp.gmail.com");
 		mailSender.setPort(587);
-		mailSender.setUsername("managerbytewise@gmail.com");
-		mailSender.setPassword("gjje qzer whjm ozxu");
+		mailSender.setUsername("bytewisemis@gmail.com");
+		mailSender.setPassword("clli tpyo metg izka");
 
 		Properties properties = mailSender.getJavaMailProperties();
 		properties.put("mail.transport.protocol", "smtp");

@@ -318,7 +318,7 @@ public class UserServiceImpl implements UserService {
 
 		try {
 
-			emailSender.sendEmail(email, emailTemplate, subject, map);
+			emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
@@ -386,7 +386,7 @@ public class UserServiceImpl implements UserService {
 				String emailTemplate = loadHtmlTemplate("/ForgotPassword.html");
 				String subject = "Forgot Your Password ? ";
 
-				emailSender.sendEmail(email, emailTemplate, subject, map);
+				emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
 
 			} catch (Exception e) {
 				e.printStackTrace();
