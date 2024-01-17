@@ -1,11 +1,15 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +20,10 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import com.bytesfarms.companyMain.entity.Policy;
+import com.bytesfarms.companyMain.entity.User;
+import com.bytesfarms.companyMain.entity.UserProfile;
 import com.bytesfarms.companyMain.repository.PolicyRepository;
 import com.bytesfarms.companyMain.service.PolicyService;
-
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
 
 @Service
 public class PolicyServiceImpl implements PolicyService {
@@ -69,33 +71,58 @@ public class PolicyServiceImpl implements PolicyService {
 	}
 
 	@Override
-	public byte[] createPolicyPdf(Long id) {
+	public String createPolicyPdf(Long id) {
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			Optional<Policy> policyOptional = policyRepository.findById(id);
 
 			if (policyOptional.isPresent()) {
 				Policy policy = policyOptional.get();
 				String content = policy.getContent();
+				String name = policy.getTitle();
 
-				Document document = new Document();
-				PdfWriter.getInstance(document, baos);
-				document.open();
+				// content = content.trim();
 
-				document.add(new Paragraph(content));
+				if (content.isEmpty()) {
+					log.warn("Policy content is empty for ID: {}", id);
+					return null;
+				}
 
-				document.close();
+				InputStream htmlInputStream = getClass().getResourceAsStream("/PolicyPDF.html");
+				String htmlContent = IOUtils.toString(htmlInputStream, StandardCharsets.UTF_8);
 
-				log.info("Generated PDF for Policy: {}", policy.getTitle());
+				htmlContent = processThymeleafTemplate(htmlContent, content, name);
 
-				return baos.toByteArray();
+				ITextRenderer renderer = new ITextRenderer();
+				renderer.setDocumentFromString(htmlContent);
+				renderer.layout();
+				renderer.createPDF(baos);
+
+				log.info("Generating payroll pdf : ");
+
+				return baos.toString();
 			} else {
-				log.warn("Policy not found for ID: {}", id);
+				log.info("Policy is not present ! ");
 				return null;
 			}
 		} catch (Exception e) {
-			log.error("Error generating PDF for Policy ID: {}", id, e);
+			e.printStackTrace();
 			return null;
 		}
+
+	}
+
+	private String processThymeleafTemplate(String htmlContent, String content, String name) {
+		TemplateEngine templateEngine = new TemplateEngine();
+		templateEngine.setTemplateResolver(new StringTemplateResolver());
+
+		Context context = new Context();
+		context.setVariable("POLICYNAME", name);
+		context.setVariable("CONTENT", content);
+
+		String processedHtml = templateEngine.process(htmlContent, context);
+
+		// log.info("BRO CHAL NI RAHA YAR" + processedHtml.toString());
+		return processedHtml.toString();
 	}
 
 	@Override
@@ -104,16 +131,16 @@ public class PolicyServiceImpl implements PolicyService {
 
 		if (policyOptional.isPresent()) {
 			Policy policy = policyOptional.get();
-			
+
 			policyRepository.deleteById(id);
-			
+
 			log.info("Deleted Policy: {}", policy.getTitle());
-			
-			return  policy.getTitle() + " has been deleted";
+
+			return policy.getTitle() + " has been deleted";
 		} else {
-			
+
 			log.warn("Policy not found for ID: {}", id);
-			
+
 			return "Policy not found for ID: " + id;
 		}
 	}

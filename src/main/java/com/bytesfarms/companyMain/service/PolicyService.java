@@ -13,7 +13,7 @@ public interface PolicyService {
 
 	Policy savePolicy(Policy policy);
 
-	byte[] createPolicyPdf(Long id);
+	String createPolicyPdf(Long id);
 
 	String updatePolicyContent(Long id, Policy policy);
 
