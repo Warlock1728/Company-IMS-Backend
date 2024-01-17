@@ -1,6 +1,7 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -8,7 +9,9 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -17,6 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,6 +41,9 @@ import com.bytesfarms.companyMain.service.PayrollService;
 import com.bytesfarms.companyMain.util.IMSConstants;
 
 import org.apache.commons.io.IOUtils;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.AddressException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -52,6 +59,9 @@ public class PayrollServiceImpl implements PayrollService {
 
 	@Autowired
 	private JavaMailSender javaMailSender;
+
+	@Autowired
+	EmailSender emailSender;
 
 	@Autowired
 	TimeSheetRepository timeSheetRepository;
@@ -101,7 +111,7 @@ public class PayrollServiceImpl implements PayrollService {
 			payroll.setBonus(3000);
 			payroll.setUser(user);
 			payroll.setMonth(month.toString());
-			
+
 			payroll.setLeaveDays(totalLeavesTaken);
 			payroll.setHalfDays(totalHalfDaysTaken);
 
@@ -141,7 +151,7 @@ public class PayrollServiceImpl implements PayrollService {
 
 	@Scheduled(cron = "0 0 0 L * ?") // Execute at midnight on the last day of every month
 	@Transactional
-	public void SendEmailForPayroll() {
+	public void SendEmailForPayroll() throws AddressException, MessagingException {
 		List<User> usersWithRole2And3 = userRepository.findByRoleIdIn(Arrays.asList(2L, 3L));
 
 		for (User user : usersWithRole2And3) {
@@ -151,14 +161,28 @@ public class PayrollServiceImpl implements PayrollService {
 		log.info("Mails have been sent to everyone regarding Payroll. Thank You");
 	}
 
-	private void sendPayrollEmail(User user) {
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(user.getEmail());
-		message.setSubject("Your Payroll is Available !");
-		message.setText("Hello " + user.getUsername()
-				+ ", your Payroll is now available for this month. Please visit your dashboard to find the same. Thanks.");
+	private void sendPayrollEmail(User user) throws AddressException, MessagingException {
 
-		javaMailSender.send(message);
+		HashMap<String, String> map = new HashMap<>();
+		String link = "http://localhost:3000/user-dashboard";
+
+		map.put("DASHBOARD", link);
+		map.put("userName", user.getUsername());
+		
+
+		String subject = "Leave Application Notification";
+		String emailTemplate = loadHtmlTemplate("/Payroll-Available.html");
+
+		emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
+	}
+
+	private String loadHtmlTemplate(String templatePath) {
+		try (InputStream inputStream = new ClassPathResource(templatePath).getInputStream();
+				Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name())) {
+			return scanner.useDelimiter("\\A").next();
+		} catch (IOException e) {
+			throw new RuntimeException("Error loading HTML template", e);
+		}
 	}
 
 	@Override
@@ -177,24 +201,19 @@ public class PayrollServiceImpl implements PayrollService {
 			User userId) {
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-			
-			//Load HTML directly
+			// Load HTML directly
 			InputStream htmlInputStream = getClass().getResourceAsStream("/payslip.html");
 			String htmlContent = IOUtils.toString(htmlInputStream, StandardCharsets.UTF_8);
-			
-			
-			//Load Signatures
+
+			// Load Signatures
 			InputStream signatureInputStream = getClass().getResourceAsStream("/CEOsignatures.png");
 			byte[] signatureBytes = IOUtils.toByteArray(signatureInputStream);
 			String signatureBase64 = Base64.getEncoder().encodeToString(signatureBytes);
-			
-			//Load Logo of Bytesfarms
+
+			// Load Logo of Bytesfarms
 			InputStream LogoInputStream = getClass().getResourceAsStream("/LOGO.png");
 			byte[] logoBytes = IOUtils.toByteArray(LogoInputStream);
 			String logoBase64 = Base64.getEncoder().encodeToString(logoBytes);
-			
-			
-			
 
 			User user = userRepository.findById(userId.getId()).orElse(null);
 
@@ -205,7 +224,7 @@ public class PayrollServiceImpl implements PayrollService {
 				if (profile != null) {
 					// Process Thymeleaf template with user and profile details
 					htmlContent = processThymeleafTemplate(htmlContent, grossSalary, netPay, deductions, bonus, month,
-							user.getUsername(), profile.getDesignation(), signatureBase64,logoBase64);
+							user.getUsername(), profile.getDesignation(), signatureBase64, logoBase64);
 				}
 			}
 
@@ -230,7 +249,8 @@ public class PayrollServiceImpl implements PayrollService {
 	}
 
 	private String processThymeleafTemplate(String template, String grossSalary, double netPay, double deductions,
-			double bonus, String month, String employeeName, String designation, String signatureBase64, String logoBase64) {
+			double bonus, String month, String employeeName, String designation, String signatureBase64,
+			String logoBase64) {
 
 		TemplateEngine templateEngine = new TemplateEngine();
 		templateEngine.setTemplateResolver(new StringTemplateResolver());
@@ -248,12 +268,12 @@ public class PayrollServiceImpl implements PayrollService {
 		context.setVariable("year", LocalDateTime.now().getYear());
 
 		context.setVariable("signatureImageSource", "data:image/png;base64," + signatureBase64);
-		
+
 		context.setVariable("LogoImageSource", "data:image/png;base64," + logoBase64);
 
 		String processedHtml = templateEngine.process(template, context);
 
-		//log.info("BRO CHAL NI RAHA YAR" + processedHtml.toString());
+		// log.info("BRO CHAL NI RAHA YAR" + processedHtml.toString());
 		return processedHtml.toString();
 	}
 

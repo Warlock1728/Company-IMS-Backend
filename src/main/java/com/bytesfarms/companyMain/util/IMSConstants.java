@@ -37,11 +37,13 @@ public class IMSConstants {
 	
 	public static final String TRUE = "true";
 	public static final String FALSE = "false";
-	public static final String MAIL_USERNAME = "eventify.notifications@gmail.com";
-	public static final String MAIL_PASSWORD = "xeiefuptnfjzdyhv";
+	public static final String MAIL_USERNAME = "bytewisemis@gmail.com";
+	public static final String MAIL_PASSWORD = "clli tpyo metg izka";
 
 	public static final String SMTP_MAIL_HOST ="smtp.gmail.com";
 	public static final String SMTP_MAIL_PORT ="587";
+	public static final String RECEIPIENT ="managerbytewise@gmail.com";
+	
 	
 	
 	

@@ -23,6 +23,7 @@ import com.bytesfarms.companyMain.entity.User;
 import com.bytesfarms.companyMain.repository.LeaveRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.LeaveService;
+import com.bytesfarms.companyMain.util.IMSConstants;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
@@ -171,10 +172,15 @@ public class LeaveServiceImpl implements LeaveService {
 			String subject = "Leave Application Notification";
 
 			String emailTemplate = loadHtmlTemplate("/Leave-Notification-Admin.html");
-
-			for (String email : hrAdminEmails) {
-				emailSender.sendEmail(email, emailTemplate, subject, map);
-			}
+			
+			
+			emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
+			
+			//Code to send dynamic mails
+//
+//			for (String email : hrAdminEmails) {
+//				emailSender.sendEmail(email, emailTemplate, subject, map);
+//			}
 		} else {
 
 			System.out.println("No HR or Admin email addresses found.");
@@ -198,8 +204,9 @@ public class LeaveServiceImpl implements LeaveService {
 		HashMap<String, String> map = new HashMap<>();
 		map.put("newStatus", newStatus);
 		map.put("userName", user.getUsername());
+		emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
 
-		emailSender.sendEmail(user.getEmail(), emailTemplate, subject, map);
+		//emailSender.sendEmail(user.getEmail(), emailTemplate, subject, map);
 
 	}
 

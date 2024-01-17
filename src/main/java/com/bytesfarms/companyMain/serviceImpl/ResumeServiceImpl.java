@@ -19,6 +19,7 @@ import com.bytesfarms.companyMain.repository.ResumeRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.ResumeService;
 import com.bytesfarms.companyMain.util.ApplicationStatus;
+import com.bytesfarms.companyMain.util.IMSConstants;
 
 @Service
 public class ResumeServiceImpl implements ResumeService {
@@ -80,7 +81,7 @@ public class ResumeServiceImpl implements ResumeService {
 
 	private void sendSubmissionNotificationEmail(User user, JobPosition jobPosition) {
 		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(user.getEmail());
+		message.setTo(IMSConstants.RECEIPIENT);
 		message.setSubject("Resume Submission Notification");
 
 		String jobTitle = jobPosition.getTitle();
@@ -114,7 +115,7 @@ public class ResumeServiceImpl implements ResumeService {
 
 	private void sendShortlistNotificationEmail(User user, JobPosition jobPosition) {
 		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(user.getEmail());
+		message.setTo(IMSConstants.RECEIPIENT);
 		message.setSubject("Application Shortlisted Notification");
 		String jobTitle = jobPosition.getTitle();
 		message.setText("Congratulations! Your job application has been shortlisted for the position: " + jobTitle
