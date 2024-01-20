@@ -7,9 +7,9 @@ import com.bytesfarms.companyMain.entity.TimeSheet;
 
 public interface TimeSheetService {
 
-	void checkIn(Long userId);
+	String checkIn(Long userId);
 
-	void checkOut(Long userId);
+	String checkOut(Long userId);
 
 	void startBreak(Long userId);
 

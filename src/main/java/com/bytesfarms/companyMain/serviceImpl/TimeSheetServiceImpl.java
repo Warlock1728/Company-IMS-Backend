@@ -18,7 +18,6 @@ import com.bytesfarms.companyMain.repository.TimeSheetRepository;
 import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.TimeSheetService;
 import com.bytesfarms.companyMain.util.TimeSheetStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -38,36 +37,43 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 
 	@Override
 	@Transactional
-	public void checkIn(Long userId) {
+	public String checkIn(Long userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found"));
 
-		Optional<TimeSheet> lastEntry = timeSheetRepository.findTopByUserIdOrderByIdDesc(userId);
+		
 
-		if (lastEntry.isPresent() && lastEntry.get().getStatus().equals(TimeSheetStatus.CHECKED_IN)) {
-			throw new IllegalStateException("User is already checked in.");
+		// Trim the time information to compare only the date
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		LocalDateTime startDateTime = currentDateTime.toLocalDate().atStartOfDay();
+		LocalDateTime endDateTime = startDateTime.plusHours(23).plusMinutes(	59).plusSeconds(59);
+
+		// Check if the user has already checked in on the current date
+		if (timeSheetRepository.existsByUserIdAndCheckInTimeBetween(userId, startDateTime, endDateTime)) {
+			return "User has already checked in on the current date.";
 		}
 
 		TimeSheet timeSheet = new TimeSheet();
 		timeSheet.setUser(user);
-		timeSheet.setCheckInTime(LocalDateTime.now());
+		timeSheet.setCheckInTime(currentDateTime);
 		timeSheet.setStatus(TimeSheetStatus.CHECKED_IN);
-		timeSheet.setDay(LocalDate.now().getDayOfWeek().toString());
-		timeSheet.setMonth(LocalDate.now().getMonth().toString());
-		timeSheet.setYear(Integer.toString(LocalDate.now().getYear()));
+		timeSheet.setDay(currentDateTime.getDayOfWeek().toString());
+		timeSheet.setMonth(currentDateTime.getMonth().toString());
+		timeSheet.setYear(Integer.toString(currentDateTime.getYear()));
 		timeSheetRepository.save(timeSheet);
+		return "Checked In Successfully";
 	}
 
 	@Override
 	@Transactional
-	public void checkOut(Long userId) {
+	public String checkOut(Long userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found"));
 
 		Optional<TimeSheet> lastEntry = timeSheetRepository.findTopByUserIdOrderByIdDesc(userId);
 
 		if (lastEntry.isEmpty() || lastEntry.get().getStatus().equals(TimeSheetStatus.CHECKED_OUT)) {
-			throw new IllegalStateException("User is not checked in.");
+			return "User is not checked in.";
 		}
 
 		TimeSheet timeSheet = lastEntry.get();
@@ -93,7 +99,8 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 
 		long standardWorkingTime = 8 * 60 + 45; // This is current time in Bytesfarms to complete in day in Minutes
 
-		boolean isHalfDay = totalWorkDuration.toMinutes() < standardWorkingTime || totalWorkDuration.toMinutes()> (4 * 60 + 30) ;
+		boolean isHalfDay = totalWorkDuration.toMinutes() < standardWorkingTime
+				|| totalWorkDuration.toMinutes() > (4 * 60 + 30);
 		boolean isLeaveDay = totalWorkDuration.isZero() || totalWorkDuration.toMinutes() < (4 * 60 + 30);
 
 		boolean isPresentDay = totalWorkDuration.toMinutes() == standardWorkingTime
@@ -103,6 +110,7 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		timeSheet.setLeaveDay(isLeaveDay);
 		timeSheet.setPresentDay(isPresentDay);
 		timeSheetRepository.save(timeSheet);
+		return "Checked Out Successfully";
 
 	}
 

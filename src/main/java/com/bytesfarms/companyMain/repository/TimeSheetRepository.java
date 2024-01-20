@@ -26,5 +26,8 @@ public interface TimeSheetRepository extends JpaRepository<TimeSheet, Long> {
 
 	@Query("SELECT t FROM TimeSheet t WHERE t.user.id = :userId AND t.month = :month")
 	List<TimeSheet> findByUserIdAndMonth(@Param("userId") Long userId, @Param("month") String month);
+	
+	
+	 boolean existsByUserIdAndCheckInTimeBetween(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
 }

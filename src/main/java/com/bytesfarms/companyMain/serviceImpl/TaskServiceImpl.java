@@ -33,7 +33,8 @@ public class TaskServiceImpl implements TaskService {
 
 		task.setTaskDescription(taskDTO.getTaskDescription());
 		task.setExpectedTime(LocalTime.parse(taskDTO.getExpectedTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
-		task.setActualTime(LocalTime.parse(taskDTO.getActualTime(), DateTimeFormatter.ofPattern("HH:mm:ss")));
+		// task.setActualTime(LocalTime.parse(taskDTO.getActualTime(),
+		// DateTimeFormatter.ofPattern("HH:mm:ss")));
 		task.setStatus(taskDTO.getStatus());
 		task.setDate(LocalDate.now());
 		User user = userRepository.findById(userId)
@@ -46,13 +47,19 @@ public class TaskServiceImpl implements TaskService {
 
 	// Get all tasks for that employee.
 	@Override
-	public List<Task> getTasksByUserId(Long userId) {
+	public List<Task> getTasksByUserIdAndDate(Long userId, String date) {
 		if (userId == 0) {
 
 			return taskRepository.findAll();
 		} else {
+			if (date != null && !date.isEmpty()) {
 
-			return taskRepository.findByUserId(userId);
+				LocalDate filterDate = "Today".equalsIgnoreCase(date) ? LocalDate.now() : LocalDate.parse(date);
+	            return taskRepository.findByUserIdAndDate(userId, filterDate);
+			} else {
+
+				return taskRepository.findByUserId(userId);
+			}
 		}
 	}
 
@@ -80,6 +87,19 @@ public class TaskServiceImpl implements TaskService {
 		}
 
 		return taskRepository.save(existingTask); // Update a task for employee if he needs any changes
+	}
+
+	@Override
+	public String deleteTask(Long taskId) {
+		try{
+			taskRepository.deleteById(taskId);
+			return "Task deleted";
+			
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }

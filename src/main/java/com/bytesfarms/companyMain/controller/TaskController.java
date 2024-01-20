@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,14 +38,22 @@ public class TaskController {
 	}
 
 	@GetMapping("/get")
-	public ResponseEntity<List<Task>> getTasksByUserId(@RequestParam Long userId) {
-		List<Task> tasks = taskService.getTasksByUserId(userId);
-		return new ResponseEntity<>(tasks, HttpStatus.OK);
-	}
+	public List<Task> getTasksByUserIdAndDate(
+            @RequestParam(name = "userId") Long userId,
+            @RequestParam(name = "date", required = false) String date
+    ) {
+        return taskService.getTasksByUserIdAndDate(userId, date);
+    }
 
 	@PutMapping("/update")
 	public ResponseEntity<String> updateTask(@RequestParam Long taskId, @RequestParam Long userId, @RequestBody TaskDTO taskDTO) {
 		Task updatedTask = taskService.updateTask(userId,taskId, taskDTO);
 		return new ResponseEntity<>("Task with ID " + taskId + " updated successfully", HttpStatus.OK);
 	}
+	
+	@DeleteMapping("/delete")
+	public String deleteTask(@RequestParam Long taskId){
+		  return taskService.deleteTask(taskId);
+	}
+	
 }

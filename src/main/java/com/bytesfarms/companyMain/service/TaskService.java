@@ -9,11 +9,15 @@ public interface TaskService {
 
 	
 
-	List<Task> getTasksByUserId(Long userId);
+	
 
 	Task updateTask(Long userId,Long taskId, TaskDTO taskDTO);
 
 	Task createTask(Long userId, TaskDTO taskDTO);
+
+	List<Task> getTasksByUserIdAndDate(Long userId, String date);
+
+	String deleteTask(Long taskId);
 	
 
 }
