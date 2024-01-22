@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bytesfarms.companyMain.dto.LeaveRequestDTO;
+import com.bytesfarms.companyMain.entity.LeaveRequest;
 import com.bytesfarms.companyMain.service.LeaveService;
 
 @RestController
@@ -30,6 +30,7 @@ public class LeaveController {
 		boolean applied = leaveService.applyLeave(leaveRequestDTO, userId);
 		if (applied) {
 			return ResponseEntity.ok("Leave applied successfully.");
+
 		} else {
 			return ResponseEntity.status(200).body("Failed to apply leave. Please try again.");
 		}
@@ -46,21 +47,22 @@ public class LeaveController {
 			return ResponseEntity.status(200).body("Failed to update leave status. Please try again.");
 		}
 	}
-	@DeleteMapping("/delete")
-    public ResponseEntity<String> deleteLeaveRequest(@RequestParam Long leaveRequestId) {
-        boolean deleted = leaveService.deleteLeaveRequest(leaveRequestId);
 
-        if (deleted) {
-            return ResponseEntity.ok("Leave request deleted successfully.");
-        } else {
-            return ResponseEntity.status(200).body("Leave request not found.");
-        }
-    }
-	
-	 @GetMapping("/get")
-	    public ResponseEntity<List<LeaveRequestDTO>> getAllLeavesForUser(@RequestParam Long userId) {
-	        List<LeaveRequestDTO> leaves = leaveService.getAllLeavesForUser(userId);
-	        return ResponseEntity.ok(leaves);
-	    }
+	@DeleteMapping("/delete")
+	public ResponseEntity<String> deleteLeaveRequest(@RequestParam Long leaveRequestId) {
+		boolean deleted = leaveService.deleteLeaveRequest(leaveRequestId);
+
+		if (deleted) {
+			return ResponseEntity.ok("Leave request deleted successfully.");
+		} else {
+			return ResponseEntity.status(200).body("Leave request not found.");
+		}
+	}
+
+	@GetMapping("/get")
+	public ResponseEntity<List<LeaveRequest>> getAllLeavesForUser(@RequestParam Long userId, @RequestParam(name = "quarter", required = false) String quarter) {
+		List<LeaveRequest> leaves = leaveService.getAllLeavesForUser(userId,quarter);
+		return ResponseEntity.ok(leaves);
+	}
 
 }

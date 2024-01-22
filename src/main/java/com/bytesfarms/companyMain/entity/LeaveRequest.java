@@ -2,6 +2,7 @@ package com.bytesfarms.companyMain.entity;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +30,17 @@ public class LeaveRequest {
 	private LocalDate endDate;
 
 	private String description;
-	
+
 	private String Status;
+
+	@Column(name = "quarter")
+	private String quarter;
+
+	private float availableLeaves;
+
+	private int leavesTaken;
+
+	private float leaveWithoutPay;
+
+	private int totalHalfDay;
 }
