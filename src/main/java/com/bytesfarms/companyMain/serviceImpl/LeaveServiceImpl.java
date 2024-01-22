@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import org.mortbay.log.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
@@ -60,6 +62,12 @@ public class LeaveServiceImpl implements LeaveService {
 
 			leaveRequest.setDescription(leaveRequestDTO.getDescription());
 			leaveRequest.setStatus("Pending");
+
+			String quarter = calculateQuarter(leaveRequestDTO.getStartDate());
+			leaveRequest.setQuarter(quarter);
+
+			updateLeaveBalance(leaveRequest);
+
 			leaveRepository.save(leaveRequest);
 
 			sendLeaveApplicationEmail(user, leaveRequestDTO.getStartDate(), leaveRequestDTO.getEndDate());
@@ -71,6 +79,142 @@ public class LeaveServiceImpl implements LeaveService {
 		}
 
 	}
+
+	private void updateLeaveBalance(LeaveRequest leaveRequest) {
+
+		String leaveType = leaveRequest.getLeaveType();
+		LocalDate startDate = leaveRequest.getStartDate();
+		LocalDate endDate = leaveRequest.getEndDate();
+
+		String quarter = calculateQuarter(leaveRequest.getStartDate());
+
+		Optional<LeaveRequest> lastLeaveForQuarter = leaveRepository
+				.findTopByUserIdAndQuarterOrderByStartDateDesc(leaveRequest.getUser().getId(), quarter);
+
+		int leavesTaken = leaveRequest.getLeavesTaken();
+		float availableLeaves = leaveRequest.getAvailableLeaves();
+		float unpaidLeaves = leaveRequest.getLeaveWithoutPay();
+		int halfDays = leaveRequest.getTotalHalfDay();
+
+		if (lastLeaveForQuarter.isPresent()) {
+			LeaveRequest lastLeave = lastLeaveForQuarter.get();
+
+			availableLeaves = lastLeave.getAvailableLeaves();
+			leavesTaken = lastLeave.getLeavesTaken();
+			unpaidLeaves = lastLeave.getLeaveWithoutPay();
+			halfDays = lastLeave.getTotalHalfDay();
+
+		} else {
+			// If no history is found then we set back the avl leaves to 3.
+			availableLeaves = 3;
+			leavesTaken = 0;
+			unpaidLeaves = 0;
+			halfDays = 0;
+		}
+
+		switch (leaveType) {
+		case "Sick Leave":
+			leavesTaken += 1;
+			availableLeaves -= 1;
+			if (availableLeaves <= 0) {
+				unpaidLeaves += Math.abs(availableLeaves);
+				availableLeaves = 0;
+			}
+			break;
+		case "Half Day":
+			halfDays += 1;
+			availableLeaves -= 0.5;
+
+			if (availableLeaves <= 0) {
+				unpaidLeaves += Math.abs(availableLeaves);
+				availableLeaves = 0;
+			}
+
+			break;
+
+		case "Unplanned":
+			leavesTaken += 1;
+			availableLeaves -= 1;
+			if (availableLeaves <= 0) {
+				unpaidLeaves += Math.abs(availableLeaves);
+				availableLeaves = 0;
+			}
+			break;
+
+		case "Planned":
+			leavesTaken += 1;
+			availableLeaves -= 1;
+			if (availableLeaves <= 0) {
+				unpaidLeaves += Math.abs(availableLeaves);
+				availableLeaves = 0;
+			}
+			break;
+
+		case "Other":
+			leavesTaken += 1;
+			availableLeaves -= 1;
+			if (availableLeaves <= 0) {
+				unpaidLeaves += Math.abs(availableLeaves);
+				availableLeaves = 0;
+			}
+			break;
+
+		}
+
+		long daysDifference = ChronoUnit.DAYS.between(startDate, endDate);
+		if (daysDifference > 1) {
+			leavesTaken += (int) daysDifference - 1;
+			availableLeaves = Math.max(-100, availableLeaves - (int) daysDifference + 1);
+			if (availableLeaves <= 0) {
+				unpaidLeaves += Math.abs(availableLeaves);
+				availableLeaves = 0;
+			}
+		}
+
+		// Set the updated values back to the leave request
+
+		Log.info("Leaves taken are : " + leavesTaken);
+		Log.info("Leaves available are : " + availableLeaves);
+
+		leaveRequest.setLeavesTaken(leavesTaken);
+		leaveRequest.setAvailableLeaves(availableLeaves);
+		leaveRequest.setLeaveWithoutPay(unpaidLeaves);
+		leaveRequest.setTotalHalfDay(halfDays);
+
+	}
+
+	private String calculateQuarter(LocalDate startDate) {
+		int month = startDate.getMonthValue();
+		if (month >= 1 && month <= 3) {
+			return "Jan-Mar";
+		} else if (month >= 4 && month <= 6) {
+			return "Apr-Jun";
+		} else if (month >= 7 && month <= 9) {
+			return "Jul-Sep";
+		} else {
+			return "Oct-Dec";
+		}
+	}
+
+//	private void updateQuarterData(LeaveRequest leaveRequest) {
+//
+//		String leaveType = leaveRequest.getLeaveType();
+//		switch (leaveType) {
+//		case "Full Day":
+//			leaveRequest.setLeavesThisQuarter(leaveRequest.getLeavesThisQuarter() + 1);
+//			break;
+//		case "Half Day":
+//			leaveRequest.setTotalHalfDay(leaveRequest.getTotalHalfDay() + 1);
+//			if (leaveRequest.getTotalHalfDay() % 2 == 0) {
+//				leaveRequest.setLeavesThisQuarter(leaveRequest.getLeavesThisQuarter() + 1);
+//			}
+//			break;
+//		case "Leave Without Pay":
+//			leaveRequest.setLeavesWithoutPay(leaveRequest.getLeavesWithoutPay() + 1);
+//			break;
+//
+//		}
+//	}
 
 	@Override
 	public boolean updateLeaveStatus(Long leaveRequestId, LeaveRequestDTO leaveRequestDTO) {
@@ -131,16 +275,25 @@ public class LeaveServiceImpl implements LeaveService {
 	}
 
 	@Override
-	public List<LeaveRequestDTO> getAllLeavesForUser(Long userId) {
+	public List<LeaveRequest> getAllLeavesForUser(Long userId, String quarter) {
 		List<LeaveRequest> leaves;
 
 		if (userId == 0) {
 			leaves = leaveRepository.findAll();
 		} else {
-			leaves = leaveRepository.findByUserId(userId);
+			LocalDate filterDate;
+			if (quarter != null && !quarter.isEmpty()) {
+
+				filterDate = LocalDate.now();
+				quarter = calculateQuarter(filterDate);
+				return leaveRepository.findByUserIdAndQuarter(userId, quarter);
+			} else {
+
+				return leaveRepository.findByUserId(userId);
+			}
 		}
 
-		return leaves.stream().map(this::convertToDTO).collect(Collectors.toList());
+		return leaves;
 	}
 
 	private LeaveRequestDTO convertToDTO(LeaveRequest leave) {
@@ -172,11 +325,10 @@ public class LeaveServiceImpl implements LeaveService {
 			String subject = "Leave Application Notification";
 
 			String emailTemplate = loadHtmlTemplate("/Leave-Notification-Admin.html");
-			
-			
+
 			emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
-			
-			//Code to send dynamic mails
+
+			// Code to send dynamic mails
 //
 //			for (String email : hrAdminEmails) {
 //				emailSender.sendEmail(email, emailTemplate, subject, map);
@@ -206,7 +358,7 @@ public class LeaveServiceImpl implements LeaveService {
 		map.put("userName", user.getUsername());
 		emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
 
-		//emailSender.sendEmail(user.getEmail(), emailTemplate, subject, map);
+		// emailSender.sendEmail(user.getEmail(), emailTemplate, subject, map);
 
 	}
 

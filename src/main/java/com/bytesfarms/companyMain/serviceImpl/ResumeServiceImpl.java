@@ -1,11 +1,16 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -20,6 +25,9 @@ import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.ResumeService;
 import com.bytesfarms.companyMain.util.ApplicationStatus;
 import com.bytesfarms.companyMain.util.IMSConstants;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.AddressException;
 
 @Service
 public class ResumeServiceImpl implements ResumeService {
@@ -36,40 +44,44 @@ public class ResumeServiceImpl implements ResumeService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
-		@Override
-		public Long saveResume(MultipartFile file, Long jobPositionId, Long userId, String lastJobTitle, Integer lastJobExperience, String lastJobCompany,
-	            BigDecimal expectedSalary) {
-			try {
-	
-				Optional<JobPosition> optionalJobPosition = jobPositionRepository.findById(jobPositionId);
-	
-				Optional<User> optionalUser = userRepository.findById(userId);
-	
-				if (optionalJobPosition.isPresent()) {
-					Resume resume = new Resume();
-					// resume.setFileName(fileName);
-					resume.setFileData(file.getBytes());
-	
-					resume.setJobPosition(optionalJobPosition.get());
-					resume.setUser(optionalUser.get());
-					resume.setStatus(ApplicationStatus.SUBMITTED);
-	
-					resume.setLastJobTitle(lastJobTitle);
-					resume.setLastJobExperience(lastJobExperience);
-					resume.setLastJobCompany(lastJobCompany);
-					resume.setExpectedSalary(expectedSalary);
-	
-					sendSubmissionNotificationEmail(optionalUser.get(), optionalJobPosition.get());
-					return resumeRepository.save(resume).getId();
-				} else {
-	
-					return null;
-				}
-			} catch (IOException e) {
-	
-				e.printStackTrace();
+	@Autowired
+	EmailSender emailSender;
+
+	@Override
+	public Long saveResume(MultipartFile file, Long jobPositionId, Long userId, String lastJobTitle,
+			Integer lastJobExperience, String lastJobCompany, BigDecimal expectedSalary)
+			throws AddressException, MessagingException {
+		try {
+
+			Optional<JobPosition> optionalJobPosition = jobPositionRepository.findById(jobPositionId);
+
+			Optional<User> optionalUser = userRepository.findById(userId);
+
+			if (optionalJobPosition.isPresent()) {
+				Resume resume = new Resume();
+				// resume.setFileName(fileName);
+				resume.setFileData(file.getBytes());
+
+				resume.setJobPosition(optionalJobPosition.get());
+				resume.setUser(optionalUser.get());
+				resume.setStatus(ApplicationStatus.SUBMITTED);
+
+				resume.setLastJobTitle(lastJobTitle);
+				resume.setLastJobExperience(lastJobExperience);
+				resume.setLastJobCompany(lastJobCompany);
+				resume.setExpectedSalary(expectedSalary);
+
+				sendSubmissionNotificationEmail(optionalUser.get(), optionalJobPosition.get());
+				return resumeRepository.save(resume).getId();
+			} else {
+
 				return null;
 			}
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			return null;
+		}
 
 	}
 
@@ -79,21 +91,30 @@ public class ResumeServiceImpl implements ResumeService {
 
 	}
 
-	private void sendSubmissionNotificationEmail(User user, JobPosition jobPosition) {
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(IMSConstants.RECEIPIENT);
-		message.setSubject("Resume Submission Notification");
+	private void sendSubmissionNotificationEmail(User user, JobPosition jobPosition)
+			throws AddressException, MessagingException {
+		HashMap<String, String> map = new HashMap<>();
 
-		String jobTitle = jobPosition.getTitle();
-		message.setText("Thank you for submitting your resume for the position: " + jobTitle
-				+ ". We have received your application. "
-				+ "Once reviewed you will be updated with status of the same.");
+		map.put("jobPost", jobPosition.getTitle());
+		map.put("userName", user.getUsername());
 
-		javaMailSender.send(message);
+		String subject = "Application Receieved !";
+		String emailTemplate = loadHtmlTemplate("/ResumeSubmitted.html");
+
+		emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
+	}
+
+	private String loadHtmlTemplate(String templatePath) {
+		try (InputStream inputStream = new ClassPathResource(templatePath).getInputStream();
+				Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name())) {
+			return scanner.useDelimiter("\\A").next();
+		} catch (IOException e) {
+			throw new RuntimeException("Error loading HTML template", e);
+		}
 	}
 
 	@Override
-	public boolean updateResumeStatus(Long resumeId, String status, Long jobPositionId) {
+	public boolean updateResumeStatus(Long resumeId, String status, Long jobPositionId) throws AddressException, MessagingException {
 		Optional<Resume> optionalResume = resumeRepository.findById(resumeId);
 		Optional<JobPosition> optionalJobPosition = jobPositionRepository.findById(jobPositionId);
 
@@ -113,15 +134,16 @@ public class ResumeServiceImpl implements ResumeService {
 		return false;
 	}
 
-	private void sendShortlistNotificationEmail(User user, JobPosition jobPosition) {
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(IMSConstants.RECEIPIENT);
-		message.setSubject("Application Shortlisted Notification");
-		String jobTitle = jobPosition.getTitle();
-		message.setText("Congratulations! Your job application has been shortlisted for the position: " + jobTitle
-				+ ". We will let you know once the interview is scheduled.");
+	private void sendShortlistNotificationEmail(User user, JobPosition jobPosition) throws AddressException, MessagingException {
+		HashMap<String, String> map = new HashMap<>();
 
-		javaMailSender.send(message);
+		map.put("jobPost", jobPosition.getTitle());
+		map.put("userName", user.getUsername());
+
+		String subject = "You are Shortlisted !";
+		String emailTemplate = loadHtmlTemplate("/ResumeShortlisted.html");
+
+		emailSender.sendEmail(IMSConstants.RECEIPIENT, emailTemplate, subject, map);
 	}
 
 }

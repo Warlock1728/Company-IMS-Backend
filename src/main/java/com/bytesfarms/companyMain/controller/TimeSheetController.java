@@ -31,15 +31,15 @@ public class TimeSheetController {
 	private TimeSheetService timeSheetService;
 
 	@PostMapping("/checkin")
-	public ResponseEntity<String> checkIn(@RequestParam Long userId) {
-		timeSheetService.checkIn(userId);
-		return new ResponseEntity<>("Checked in successfully", HttpStatus.OK);
+	public String checkIn(@RequestParam Long userId) {
+		return timeSheetService.checkIn(userId);
+		
 	}
 
 	@PostMapping("/checkout")
-	public ResponseEntity<String> checkOut(@RequestParam Long userId) {
-		timeSheetService.checkOut(userId);
-		return new ResponseEntity<>("Checked out successfully", HttpStatus.OK);
+	public String checkOut(@RequestParam Long userId) {
+		return timeSheetService.checkOut(userId);
+		
 	}
 
 	@PostMapping("/break/start")

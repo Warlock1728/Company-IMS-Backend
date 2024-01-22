@@ -19,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.bytesfarms.companyMain.entity.Resume;
 import com.bytesfarms.companyMain.service.ResumeService;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.AddressException;
+
 /*
  * @author Shivendra Singh
  * 
@@ -38,7 +41,7 @@ public class ResumeController {
 			@RequestParam("lastJobTitle") String lastJobTitle,
 			@RequestParam("lastJobExperience") Integer lastJobExperience,
 			@RequestParam("lastJobCompany") String lastJobCompany,
-			@RequestParam("expectedSalary") BigDecimal expectedSalary) {
+			@RequestParam("expectedSalary") BigDecimal expectedSalary) throws AddressException, MessagingException {
 		Long resumeId = resumeService.saveResume(file, jobPositionId, userId, lastJobTitle, lastJobExperience,
 				lastJobCompany, expectedSalary);
 		if (resumeId != null) {
@@ -58,7 +61,7 @@ public class ResumeController {
 
 	@PutMapping("/update-status")
 	public ResponseEntity<String> updateResumeStatus(@RequestParam Long resumeId, @RequestBody String status,
-			@RequestParam Long jobPositionId) {
+			@RequestParam Long jobPositionId) throws AddressException, MessagingException {
 		boolean isUpdated = resumeService.updateResumeStatus(resumeId, status, jobPositionId);
 
 		if (isUpdated) {

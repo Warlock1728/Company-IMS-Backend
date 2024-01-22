@@ -3,6 +3,7 @@ package com.bytesfarms.companyMain.service;
 import java.util.List;
 
 import com.bytesfarms.companyMain.dto.LeaveRequestDTO;
+import com.bytesfarms.companyMain.entity.LeaveRequest;
 
 public interface LeaveService {
 
@@ -12,6 +13,6 @@ public interface LeaveService {
 
 	boolean deleteLeaveRequest(Long leaveRequestId);
 
-	List<LeaveRequestDTO> getAllLeavesForUser(Long userId);
+	List<LeaveRequest> getAllLeavesForUser(Long userId,String quarter);
 
 }

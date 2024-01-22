@@ -1,5 +1,6 @@
 package com.bytesfarms.companyMain.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +15,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	Task save(Task task);
 
 	List<Task> findByUserId(Long userId);
+
+	List<Task> findByUserIdAndDate(Long userId, LocalDate parsedDate);
 
 }

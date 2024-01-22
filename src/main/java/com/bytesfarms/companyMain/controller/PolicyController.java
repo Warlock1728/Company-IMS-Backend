@@ -41,7 +41,7 @@ public class PolicyController {
 
 	// Create the pdf against content
 	@PostMapping("/create/pdf")
-	public byte[] updatePolicyPdf(@RequestParam Long id) {
+	public String updatePolicyPdf(@RequestParam Long id) {
 		return policyService.createPolicyPdf(id);
 	}
 	
