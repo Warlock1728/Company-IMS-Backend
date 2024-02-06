@@ -13,4 +13,6 @@ public interface PayrollRepository extends JpaRepository<Payroll, Double> {
 
 	List<Payroll> findByUser(User user);
 
+	List<Payroll> findByMonth(String month);
+
 }

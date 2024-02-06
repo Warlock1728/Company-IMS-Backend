@@ -1,6 +1,5 @@
 package com.bytesfarms.companyMain.service;
 
-import java.time.Month;
 import java.util.List;
 
 import com.bytesfarms.companyMain.entity.Payroll;
@@ -8,7 +7,7 @@ import com.bytesfarms.companyMain.entity.User;
 
 public interface PayrollService {
 
-	List<Payroll> generateAllPayrollData();
+	List<Payroll> generateAllPayrollData(String month);
 
 	String calculateSalary(User user, String month);
 

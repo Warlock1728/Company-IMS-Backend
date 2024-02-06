@@ -31,8 +31,8 @@ public class PayrollController {
 	UserRepository userRepository;
 
 	@GetMapping("/allData")
-	public List<Payroll> getAllPayrollData() {
-		return payrollService.generateAllPayrollData();
+	public List<Payroll> getAllPayrollData(@RequestParam String month) {
+		return payrollService.generateAllPayrollData(month);
 	}
 
 	@PostMapping("/create")
@@ -42,19 +42,31 @@ public class PayrollController {
 
 		return payrollService.calculateSalary(user, month);
 	}
+	
+	
+	
 
 	@GetMapping("/generatePayslip")
 	public ResponseEntity<List<Payroll>> generatePayslip(@RequestParam Long userId,
 			@RequestParam(required = false) String month) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+		User user;
+
+		if (userId == 0) {
+			user = null; // Pass null for user with ID 0
+		} else {
+			user = userRepository.findById(userId)
+					.orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+		}
 
 		List<Payroll> payslip = payrollService.generatePayslips(user, month);
 		return ResponseEntity.ok(payslip);
 	}
+	
+	
+	
 
 	@PostMapping("/generatePdf")
-	public ResponseEntity<byte[]> generatePdf(@RequestBody PayrollRequest payrollRequest,@RequestParam User userId) {
+	public ResponseEntity<byte[]> generatePdf(@RequestBody PayrollRequest payrollRequest, @RequestParam User userId) {
 		byte[] pdfContent = payrollService.generatePdf(payrollRequest.getGrossSalary(), payrollRequest.getNetPay(),
 				payrollRequest.getDeductions(), payrollRequest.getBonus(), payrollRequest.getMonth(), userId);
 		return PdfUtil.createResponse(pdfContent, "payroll.pdf");

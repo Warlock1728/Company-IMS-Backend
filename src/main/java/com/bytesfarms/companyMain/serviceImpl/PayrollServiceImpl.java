@@ -1,8 +1,8 @@
 package com.bytesfarms.companyMain.serviceImpl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -17,11 +17,11 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -40,14 +40,12 @@ import com.bytesfarms.companyMain.repository.UserRepository;
 import com.bytesfarms.companyMain.service.PayrollService;
 import com.bytesfarms.companyMain.util.IMSConstants;
 
-import org.apache.commons.io.IOUtils;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
 import jakarta.transaction.Transactional;
 
 @Service
-public class PayrollServiceImpl implements PayrollService {
+ public class PayrollServiceImpl implements PayrollService {
 
 	private static final Logger log = LoggerFactory.getLogger(PayrollServiceImpl.class);
 
@@ -72,8 +70,8 @@ public class PayrollServiceImpl implements PayrollService {
 	private static final String SECRET_KEY = IMSConstants.SECRET_KEY;
 
 	@Override
-	public List<Payroll> generateAllPayrollData() {
-		return payrollRepository.findAll();
+	public List<Payroll> generateAllPayrollData(String month) {
+		return payrollRepository.findByMonth(month);
 	}
 
 	@Override
@@ -168,7 +166,6 @@ public class PayrollServiceImpl implements PayrollService {
 
 		map.put("DASHBOARD", link);
 		map.put("userName", user.getUsername());
-		
 
 		String subject = "Leave Application Notification";
 		String emailTemplate = loadHtmlTemplate("/Payroll-Available.html");
@@ -187,12 +184,20 @@ public class PayrollServiceImpl implements PayrollService {
 
 	@Override
 	public List<Payroll> generatePayslips(User user, String month) {
-		if (month != null) {
+		if (user == null) {
 
-			return payrollRepository.findByUserAndMonth(user, month);
+			if (month != null) {
+				return payrollRepository.findByMonth(month);
+			} else {
+				return payrollRepository.findAll();
+			}
 		} else {
 
-			return payrollRepository.findByUser(user);
+			if (month != null) {
+				return payrollRepository.findByUserAndMonth(user, month);
+			} else {
+				return payrollRepository.findByUser(user);
+			}
 		}
 	}
 
